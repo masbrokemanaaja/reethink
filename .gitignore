@@ -1,0 +1,4 @@
+.DS_Store
+*.reethink-tmp
+__pycache__/
+evals/results/

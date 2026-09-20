@@ -1,0 +1,12 @@
+{
+  "name": "reethink",
+  "description": "Six skills that make an AI coding agent check before it answers and say what it found in a way a person can act on.",
+  "version": "1.0.0",
+  "author": {
+    "name": "ree_es97"
+  },
+  "homepage": "https://reetech.web.id",
+  "repository": "https://github.com/masbrokemanaaja/reethink",
+  "license": "MIT",
+  "skills": "./skills/"
+}

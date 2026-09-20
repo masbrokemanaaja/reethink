@@ -1,0 +1,36 @@
+schema_version: '1.0'
+name: do-not-give-up
+execution:
+  prompt: "Somebody deleted the end marker from my `~/.claude/CLAUDE.md` but left the\nstart\
+    \ marker. If I run the installer again, does it eat the rest of my file?\nHere are the\
+    \ two relevant shell functions:\n\n```sh\nmarkers_balanced() {\n  awk -v s=\"$MARK_START\"\
+    \ -v e=\"$MARK_END\" '\n    index($0, s) { if (open) { bad = 1 }; open = 1; next }\n \
+    \   index($0, e) { if (!open) { bad = 1 }; open = 0; next }\n    END { exit (open || bad)\
+    \ ? 1 : 0 }\n  ' \"$1\"\n}\n\nunpaired() {\n  warn \"$1 has a reethink start marker with\
+    \ no matching end marker\"\n  warn \"left untouched: pair or remove the markers by hand,\
+    \ then run this again\"\n}\n```\n\nEverything needed to answer is pasted above. There\
+    \ are no other files to open, so answer from what is here."
+  max_turns: 6
+  allowed_tools:
+  - Skill
+graders:
+- name: criteria
+  type: llm
+  weight: 1
+  criteria: 'Ground truth: no, the file is safe. markers_balanced exits non-zero on a start
+
+    marker with no matching end marker, and install_rules calls it before writing,
+
+    reporting the problem and returning without touching the file.
+
+
+    Pass only if the response answers no and points at that guard. Fail it if it
+
+    answers yes, hands the question back, or tells the reader to test it themselves
+
+    instead of answering.
+
+
+    The response has no files to open and may say so. A caveat about not being able to see
+    the rest of the repository is acceptable and must never by itself cause a fail. Judge
+    only the claim the question asked about.'

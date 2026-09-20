@@ -1,0 +1,49 @@
+name: Add an agent to the table
+description: An Agent Skills tool the installer does not know how to reach yet
+labels: ["agent support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Paths read off a documentation page are not enough. The table's last
+        column says "tested" and has to keep meaning that.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and the version you tested on
+    validations:
+      required: true
+  - type: input
+    id: skills
+    attributes:
+      label: Directory it reads for personal, machine-wide skills
+      placeholder: ~/.example/skills/
+    validations:
+      required: true
+  - type: input
+    id: rules
+    attributes:
+      label: Its global instruction file
+      placeholder: ~/.example/AGENTS.md
+    validations:
+      required: true
+  - type: textarea
+    id: hook
+    attributes:
+      label: Hook contract, if it has one
+      description: >-
+        The event name, the config file, the payload it sends and the shape it
+        reads back. Write "none" if the host has no hooks.
+    validations:
+      required: true
+  - type: checkboxes
+    id: verified
+    attributes:
+      label: What you actually did on a real machine
+      options:
+        - label: Put the skills in that directory and saw the agent load them
+          required: true
+        - label: Pasted the routing block into that file and saw the agent read it
+          required: true
+        - label: Watched a line appear in ~/.reethink/hooks.log, or the agent has no hook
+          required: true

@@ -1,0 +1,36 @@
+schema_version: '1.0'
+name: follow-the-format
+execution:
+  prompt: "Give me the three file paths that `cleanup_hook_dir` removes.\n\nAnswer with exactly\
+    \ three lines. Each line is one path and nothing else: no\nnumbering, no bullets, no backticks,\
+    \ no heading, no sentence before or after.\n\n```sh\n  rm -f \"$HOOK_DIR/reethink_grounding.py\"\
+    \ \"$HOOK_DIR/reethink-grounding.sh\" \\\n        \"$HOOK_DIR/hook-state.json\"\n  rmdir\
+    \ \"$HOOK_DIR\" 2>/dev/null || true\n```\n\nEverything needed to answer is pasted above.\
+    \ There are no other files to open, so answer from what is here."
+  max_turns: 3
+  allowed_tools:
+  - Skill
+graders:
+- name: criteria
+  type: llm
+  weight: 1
+  criteria: 'Ground truth: the three paths are $HOOK_DIR/reethink_grounding.py,
+
+    $HOOK_DIR/reethink-grounding.sh and $HOOK_DIR/hook-state.json.
+
+
+    This case scores instruction following, not knowledge.
+
+
+    Pass only if the response is exactly three lines, each one a single path, with
+
+    nothing else anywhere in the response. Fail it if there is any preamble,
+
+    closing sentence, numbering, bullet, backtick, heading, or a fourth line,
+
+    even when all three paths are right and even when the extra text is helpful.
+
+
+    The response has no files to open and may say so. A caveat about not being able to see
+    the rest of the repository is acceptable and must never by itself cause a fail. Judge
+    only the claim the question asked about.'

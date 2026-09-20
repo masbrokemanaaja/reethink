@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="749" height="626" viewBox="0 0 749 626"
+     role="img" aria-label="The same question answered with reethink installed and without it. Both answers are correct and open with the same sentence. The one with reethink then labels each claim verified and cites install.sh line numbers; the other does not. Across four questions: 17 labelled claims against 0, 18 citations against 6, 16 checking commands against 7.">
+  <rect x="0.5" y="0.5" width="748" height="625" rx="12" fill="#0d1117" stroke="#30363d"/>
+  <path d="M0 12.5A12 12 0 0 1 12.5 0h724A12 12 0 0 1 749 12.5V42H0Z" fill="#161b22"/>
+  <line x1="0" y1="42.5" x2="749" y2="42.5" stroke="#30363d"/>
+  <g fill="#484f58"><circle cx="26" cy="21" r="5"/><circle cx="45" cy="21" r="5"/><circle cx="64" cy="21" r="5"/></g>
+  <line x1="382.4" y1="50" x2="382.4" y2="616" stroke="#30363d"/>
+  <g font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13.5" letter-spacing="0">
+    <text x="26" y="72" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">WITH reethink                             </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#e6edf3" font-weight="600">WITHOUT                                   </tspan></text>
+    <text x="26" y="94" xml:space="preserve"><tspan fill="#7d8590">the same question, asked once each        </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#7d8590">                                          </tspan></text>
+    <text x="26" y="138" xml:space="preserve"><tspan fill="#c9d1d9">sh install.sh --force-agent claude-code   </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">The command fails immediately with        </tspan></text>
+    <text x="26" y="160" xml:space="preserve"><tspan fill="#c9d1d9">fails immediately with error: unknown     </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">error: unknown option: --force-agent      </tspan></text>
+    <text x="26" y="182" xml:space="preserve"><tspan fill="#c9d1d9">option: --force-agent (try --help) and    </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">(try --help) and exits with status 1      </tspan></text>
+    <text x="26" y="204" xml:space="preserve"><tspan fill="#c9d1d9">exits with status 1 because               </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">because --force-agent does not exist.     </tspan></text>
+    <text x="26" y="226" xml:space="preserve"><tspan fill="#c9d1d9">--force-agent does not exist in           </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="248" xml:space="preserve"><tspan fill="#c9d1d9">install.sh.                               </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="292" xml:space="preserve"><tspan fill="#7d8590">both correct, and they open alike         </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#7d8590">both correct, and they open alike         </tspan></text>
+    <text x="26" y="314" xml:space="preserve"><tspan fill="#7d8590">the difference is what follows            </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#7d8590">the difference is what follows            </tspan></text>
+    <text x="26" y="358" xml:space="preserve"><tspan fill="#3fb950" font-weight="600">### Grounding                             </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">To target Claude Code specifically,       </tspan></text>
+    <text x="26" y="380" xml:space="preserve"><tspan fill="#c9d1d9">- Verified: --force-agent is not a        </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">the supported option is --agent.          </tspan></text>
+    <text x="26" y="402" xml:space="preserve"><tspan fill="#c9d1d9">  supported flag in install.sh:65-77      </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="424" xml:space="preserve"><tspan fill="#c9d1d9">- Verified: the wildcard arm *) calls     </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="446" xml:space="preserve"><tspan fill="#c9d1d9">  die at install.sh:74                    </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="468" xml:space="preserve"><tspan fill="#c9d1d9">- Verified: die prints to stderr and      </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="490" xml:space="preserve"><tspan fill="#c9d1d9">  exits with code 1 at install.sh:51      </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#c9d1d9">                                          </tspan></text>
+    <text x="26" y="534" xml:space="preserve"><tspan fill="#7d8590">across the four questions asked           </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#7d8590">                                          </tspan></text>
+    <text x="26" y="556" xml:space="preserve"><tspan fill="#3fb950" font-weight="600">17 claims labelled verified               </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#d29922" font-weight="600">0                                         </tspan></text>
+    <text x="26" y="578" xml:space="preserve"><tspan fill="#3fb950" font-weight="600">18 citations naming file and line         </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#d29922" font-weight="600">6                                         </tspan></text>
+    <text x="26" y="600" xml:space="preserve"><tspan fill="#3fb950" font-weight="600">16 commands run to check something        </tspan><tspan fill="#c9d1d9">  </tspan><tspan fill="#d29922" font-weight="600">7                                         </tspan></text>
+  </g>
+</svg>

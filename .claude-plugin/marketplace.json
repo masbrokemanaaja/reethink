@@ -1,0 +1,16 @@
+{
+  "name": "reethink",
+  "description": "Grounding skills and a hook for AI coding agents.",
+  "owner": {
+    "name": "ree_es97",
+    "url": "https://reetech.web.id"
+  },
+  "plugins": [
+    {
+      "name": "reethink",
+      "source": "./",
+      "version": "1.0.0",
+      "description": "Six skills that make an AI coding agent check before it answers and say what it found in a way a person can act on."
+    }
+  ]
+}

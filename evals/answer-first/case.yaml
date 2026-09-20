@@ -1,0 +1,47 @@
+schema_version: '1.0'
+name: answer-first
+execution:
+  prompt: "Does `sh uninstall.sh` delete `~/.reethink/hooks.log`? Here is the cleanup\nfunction\
+    \ it calls:\n\n```sh\ncleanup_hook_dir() {\n  # The scripts go; the log stays, because\
+    \ it is the record of what ran and it\n  # is the user's to read or delete. hook-state.json\
+    \ is from a version that\n  # kept state between runs; the current hook writes none, so\
+    \ this only clears\n  # what an older install left behind.\n  rm -f \"$HOOK_DIR/reethink_grounding.py\"\
+    \ \"$HOOK_DIR/reethink-grounding.sh\" \\\n        \"$HOOK_DIR/hook-state.json\"\n  rmdir\
+    \ \"$HOOK_DIR\" 2>/dev/null || true\n}\n```\n\nEverything needed to answer is pasted above.\
+    \ There are no other files to open, so answer from what is here."
+  max_turns: 6
+  allowed_tools:
+  - Skill
+graders:
+- name: criteria
+  type: llm
+  weight: 1
+  criteria: 'Ground truth: no. The function removes reethink_grounding.py,
+
+    reethink-grounding.sh and hook-state.json, then tries rmdir. The log is left
+
+    alone deliberately.
+
+
+    Both of these are required.
+
+
+    First, the answer is correct: the log is kept.
+
+
+    Second, the first sentence of the response contains the answer. This is a yes
+
+    or no question, so a first sentence beginning "No" or "Not" or otherwise
+
+    stating plainly that the log survives is a pass on this point. Fail it only
+
+    when the first sentence is preamble: context, a restatement of the question, a
+
+    narration of what the response is about to do, or a summary of the function
+
+    before any answer appears.
+
+
+    The response has no files to open and may say so. A caveat about not being able to see
+    the rest of the repository is acceptable and must never by itself cause a fail. Judge
+    only the claim the question asked about.'

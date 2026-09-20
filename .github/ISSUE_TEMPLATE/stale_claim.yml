@@ -1,0 +1,40 @@
+name: A claim here is wrong or out of date
+description: A version, path, contract or measurement that no longer holds
+labels: ["stale claim"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the failure the package exists to prevent, so it gets its own
+        form. Claims here were measured once and software moves. Saying which
+        one moved, and how you know, is the whole report.
+  - type: input
+    id: where
+    attributes:
+      label: Where the claim is
+      description: File and line, or paste the sentence.
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: What it says now
+    validations:
+      required: true
+  - type: textarea
+    id: reality
+    attributes:
+      label: What is true instead, and how you know
+      description: >-
+        The command you ran and the output it gave, or a link to the project's
+        own documentation. A recollection is a lead, not evidence.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version and date you measured it on
+      placeholder: Codex 0.154.0, 2026-09-17
+    validations:
+      required: true

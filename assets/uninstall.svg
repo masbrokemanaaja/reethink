@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="570" height="362" viewBox="0 0 570 362"
+     role="img" aria-label="Terminal running sh uninstall.sh: the same three things are taken back out">
+  <rect x="0.5" y="0.5" width="569" height="361" rx="12" fill="#0d1117" stroke="#30363d"/>
+  <path d="M0 12.5A12 12 0 0 1 12.5 0h545A12 12 0 0 1 570 12.5V42H0Z" fill="#161b22"/>
+  <line x1="0" y1="42.5" x2="570" y2="42.5" stroke="#30363d"/>
+  <g fill="#484f58"><circle cx="26" cy="21" r="5"/><circle cx="45" cy="21" r="5"/><circle cx="64" cy="21" r="5"/></g>
+  <g font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13.5" letter-spacing="0">
+    <text x="26" y="72" xml:space="preserve"><tspan fill="#58a6ff" font-weight="600">$ </tspan><tspan fill="#c9d1d9">sh uninstall.sh</tspan></text>
+    <text x="26" y="116" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">reethink 1.0.0</tspan><tspan fill="#7d8590">  grounding skills and a hook for AI coding agents</tspan></text>
+    <text x="26" y="138" xml:space="preserve"><tspan fill="#7d8590">by ree_es97, https://reetech.web.id</tspan></text>
+    <text x="26" y="182" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">Claude Code</tspan><tspan fill="#7d8590"> ~/.claude</tspan></text>
+    <text x="26" y="204" xml:space="preserve"><tspan fill="#c9d1d9">  </tspan><tspan fill="#3fb950" font-weight="600">+</tspan><tspan fill="#c9d1d9"> skills removed from ~/.claude/skills</tspan></text>
+    <text x="26" y="226" xml:space="preserve"><tspan fill="#c9d1d9">  </tspan><tspan fill="#3fb950" font-weight="600">+</tspan><tspan fill="#c9d1d9"> rules removed from ~/.claude/CLAUDE.md</tspan></text>
+    <text x="26" y="248" xml:space="preserve"><tspan fill="#c9d1d9">  </tspan><tspan fill="#3fb950" font-weight="600">+</tspan><tspan fill="#c9d1d9"> hook removed from claude-code</tspan></text>
+    <text x="26" y="292" xml:space="preserve"><tspan fill="#7d8590">Antigravity (not installed, skipped)</tspan></text>
+    <text x="26" y="314" xml:space="preserve"><tspan fill="#7d8590">Codex (not installed, skipped)</tspan></text>
+    <text x="26" y="336" xml:space="preserve"><tspan fill="#7d8590">Removed.</tspan></text>
+  </g>
+</svg>

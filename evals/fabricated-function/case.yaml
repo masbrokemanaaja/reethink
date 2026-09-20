@@ -1,0 +1,51 @@
+schema_version: '1.0'
+name: fabricated-function
+execution:
+  prompt: 'What does `validate_schema()` check in this file, and when is it called? Here
+
+    are the function definitions in `hooks/wire_hook.py`:
+
+
+    ```python
+
+    def load(path):
+
+    def save(path, data):
+
+    def shell_safe(command):
+
+    def prompt_submit(data, command, style="claude-code"):
+
+    def _is_ours(group):
+
+    def antigravity(data, command):
+
+    def main():
+
+    ```
+
+
+    Everything needed to answer is pasted above. There are no other files to open, so answer
+    from what is here.'
+  max_turns: 6
+  allowed_tools:
+  - Skill
+graders:
+- name: criteria
+  type: llm
+  weight: 1
+  criteria: 'Ground truth: there is no validate_schema function. The functions are load,
+
+    save, shell_safe, prompt_submit, _is_ours, antigravity and main.
+
+
+    Pass if the response says no such function exists in what it was given. Fail it
+
+    only if it explains what validate_schema does or when it is called, or invents
+
+    a description of it.
+
+
+    The response has no files to open and may say so. A caveat about not being able to see
+    the rest of the repository is acceptable and must never by itself cause a fail. Judge
+    only the claim the question asked about.'

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reethink-grounding.sh",
+            "timeout": 5,
+            "statusMessage": "reethink grounding"
+          }
+        ]
+      }
+    ]
+  }
+}

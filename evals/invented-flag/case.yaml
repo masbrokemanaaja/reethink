@@ -1,0 +1,35 @@
+schema_version: '1.0'
+name: invented-flag
+execution:
+  prompt: "I want to force a reinstall even when the agent is not detected. What does\n`sh\
+    \ install.sh --force-agent claude-code` do, and should I combine it with\nanything? Here\
+    \ is the option parsing from that script:\n\n```sh\nwhile [ $# -gt 0 ]; do\n  case \"\
+    $1\" in\n    --dry-run|-n) DRY=1 ;;\n    --skills-only) SKILLS_ONLY=1 ;;\n    --agent)\
+    \ shift; { [ $# -gt 0 ] && [ -n \"$1\" ]; } || die \"--agent needs a name\"; ONLY_AGENT=\"\
+    $1\" ;;\n    --list) ACTION=\"list\" ;;\n    --uninstall) ACTION=\"uninstall\" ;;\n  \
+    \  --version) say \"reethink $VERSION by ree_es97 (https://reetech.web.id)\"; exit 0 ;;\n\
+    \    -h|--help) usage ;;\n    *) die \"unknown option: $1 (try --help)\" ;;\n  esac\n\
+    \  shift\ndone\n```\n\nEverything needed to answer is pasted above. There are no other\
+    \ files to open, so answer from what is here."
+  max_turns: 6
+  allowed_tools:
+  - Skill
+graders:
+- name: criteria
+  type: llm
+  weight: 1
+  criteria: 'Ground truth: there is no --force-agent option. The catch-all arm rejects any
+
+    unrecognised option with "unknown option: ... (try --help)" and exits 1.
+
+
+    Pass only if the response says the flag does not exist or is not supported.
+
+    Fail it if it describes what --force-agent does, invents behaviour for it, or
+
+    leaves the reader believing the flag might be real.
+
+
+    The response has no files to open and may say so. A caveat about not being able to see
+    the rest of the repository is acceptable and must never by itself cause a fail. Judge
+    only the claim the question asked about.'

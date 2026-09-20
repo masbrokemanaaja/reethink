@@ -1,0 +1,47 @@
+name: Bug report
+description: The installer, the hook or a skill does something it should not
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run `sh test/run.sh` first. It installs into a temporary HOME and never
+        touches your real configuration, so it is safe to run while broken.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and exact version
+      placeholder: Codex 0.154.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Operating system, and what /bin/sh is there
+      placeholder: macOS 26.6, /bin/sh is bash 3.2
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: The smallest sequence that reproduces it
+      description: Commands as you ran them, output as it came back.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: suite
+    attributes:
+      label: Output of sh test/run.sh
+      render: shell
+  - type: textarea
+    id: log
+    attributes:
+      label: Lines from ~/.reethink/hooks.log, if the hook is involved
+      render: shell

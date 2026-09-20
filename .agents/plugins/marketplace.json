@@ -1,0 +1,19 @@
+{
+  "name": "reethink",
+  "interface": {
+    "displayName": "reethink"
+  },
+  "plugins": [
+    {
+      "name": "reethink",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

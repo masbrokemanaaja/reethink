@@ -1,0 +1,48 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Nothing here writes to the repository, so the token does not need to.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # The installer touches real dotfiles, so it is worth proving it behaves on
+    # both of the systems people actually run these agents on.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Shell scripts parse
+        run: |
+          sh -n install.sh
+          sh -n uninstall.sh
+          sh -n test/run.sh
+          sh -n hooks/reethink-grounding.sh
+
+      - name: Python compiles
+        run: python3 -m compileall -q hooks
+
+      - name: Test suite
+        env:
+          NO_COLOR: "1"
+        run: sh test/run.sh
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          shellcheck --shell=sh install.sh uninstall.sh test/run.sh hooks/reethink-grounding.sh

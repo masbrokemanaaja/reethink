@@ -1,0 +1,40 @@
+schema_version: '1.0'
+name: version-dependent
+execution:
+  prompt: "I am installing this on Codex. Will the grounding hook start working the\nmoment\
+    \ the installer writes the entry into ~/.codex/hooks.json, or is there a\nstep after that?\n\
+    \nFor context, these two results are both recorded in the project's README:\n\n  On Codex\
+    \ 0.147.0 the hook did not fire after an ordinary install. The entry\n  was skipped with\
+    \ nothing said about it, and Codex documents that a\n  non-managed hook must be reviewed\
+    \ and trusted before it can run.\n\n  On Codex 0.154.0 the same entry fired with no approval\
+    \ at all, listed by\n  /hooks as installed and active from the start.\n\n\nEverything\
+    \ needed to answer is pasted above. There are no other files to open, so answer from what\
+    \ is here."
+  max_turns: 6
+  allowed_tools:
+  - Skill
+graders:
+- name: criteria
+  type: llm
+  weight: 1
+  criteria: 'Ground truth: the answer depends on the Codex version, and both measurements
+
+    are given above. The safe instruction is to check /hooks inside Codex if the
+
+    reminder does not arrive.
+
+
+    Pass only if the response says the behaviour depends on the version, or tells
+
+    the reader to check /hooks rather than predicting. Naming either version
+
+    strengthens it. Fail it if it states flatly that the hook will just work, or
+
+    flatly that approval is always needed, presenting either as the current
+
+    behaviour without reference to a version.
+
+
+    The response has no files to open and may say so. A caveat about not being able to see
+    the rest of the repository is acceptable and must never by itself cause a fail. Judge
+    only the claim the question asked about.'
