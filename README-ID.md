@@ -397,7 +397,7 @@ Ref-nya harus ada di repositori. `main` adalah target yang bergerak dan
 
 Setiap perubahan ditandai dan bisa dibatalkan.
 
-**Skill** berupa enam folder di bawah direktori skill agent. Uninstall mencabut
+**Skill** berupa tujuh folder di bawah direktori skill agent. Uninstall mencabut
 keenam folder itu dan tidak menyentuh yang lain.
 
 **Rules** masuk ke file instruksi agent di antara dua marker:
@@ -524,14 +524,15 @@ sh test/run.sh
 ```
 
 Suite-nya memasang ke `HOME` sementara, jadi tidak pernah menyentuh konfigurasi
-asli Anda. Ia menjalankan 89 pemeriksaan: skill-nya valid terhadap spesifikasi
+asli Anda. Ia menjalankan 91 pemeriksaan: skill-nya valid terhadap spesifikasi
 dan semuanya disebut di blok routing serta pesan hook, skrip hook menjawab
 kedua kontrak host dan bertahan terhadap input rusak, blok rules idempoten dan
 membiarkan teks pengguna di tempat dan bentuk yang sama, pasangan marker yang
 rusak ditolak alih-alih dijalankan, nama `--agent` yang tidak dikenal gagal
 dengan keras, nomor versi terbaca sama di kelima belas tempat ia ditulis dan
-changelog-nya menyebut versi yang benar-benar dibawa paket, dan install yang
-diikuti uninstall mengembalikan file-nya byte for byte.
+changelog-nya menyebut versi yang benar-benar dibawa paket, setiap hitungan
+yang ditulis dengan huruf cocok dengan isi direktori, dan install yang diikuti
+uninstall mengembalikan file-nya byte for byte.
 
 ## Kenapa tujuh, dan tidak lebih
 

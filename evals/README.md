@@ -1,7 +1,8 @@
 # The benchmark
 
-Six cases, run twice each: once with reethink's skills loaded and once without.
-The difference between the two arms is the only number here worth anything.
+Eight cases, run twice each: once with reethink's skills loaded and once
+without. The difference between the two arms is the only number here worth
+anything.
 
 ```sh
 claude plugin eval . --runs 3 --max-cost-usd 8 --no-publish
@@ -34,12 +35,13 @@ dependence on what happens to be online that day.
 
 ## What it does not measure
 
-The arms differ by the six skills and nothing else. The hook and the routing
+The arms differ by the seven skills and nothing else. The hook and the routing
 block are part of the package and are not in either arm, so their effect is not
 in these numbers.
 
-Six cases is a small suite. A delta here is evidence that the skills change
-behaviour on these six failures, not a claim about every task an agent does.
+Eight cases is a small suite. A delta here is evidence that the skills
+change behaviour on these eight failures, not a claim about every task an
+agent does.
 
 ## Adding a case
 

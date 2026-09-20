@@ -960,6 +960,124 @@ else
   fail "README-ID.md does not say the skills cost $start_len_id karakter at startup"
 fi
 
+# --- a count written out in words is still a number --------------------------
+# Every place that says how many skills there are was written by hand, and a
+# seventh skill landed without four plugin manifests, two READMEs and the
+# Codex long description noticing. One of them even split the total wrong:
+# "Four skills decide what is true" plus "Two more" is six, not seven. The
+# counts are read back out of the directory now, in both languages.
+if python3 - "$ROOT" <<'COUNTS'
+import glob, os, re, sys
+_c = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+G = "\033[32m" if _c else ""
+R = "\033[31m" if _c else ""
+O = "\033[0m" if _c else ""
+root = sys.argv[1]
+EN = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+      "nine", "ten", "eleven", "twelve"]
+ID = ["nol", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh",
+      "delapan", "sembilan", "sepuluh", "sebelas", "dua belas"]
+n = len(glob.glob(os.path.join(root, "skills", "*", "SKILL.md")))
+problems = []
+
+def word_at(rel, pattern, want, note=""):
+    """Every match of `pattern` in `rel` has to spell out `want`."""
+    text = open(os.path.join(root, rel), encoding="utf-8").read()
+    found = list(re.finditer(pattern, text, re.M | re.I))
+    if not found:
+        problems.append(
+            f"{rel}: the sentence this check reads is gone. If you reworded it, "
+            f"reword the pattern in test/run.sh too: {pattern}")
+        return
+    for m in found:
+        if m.group(1).lower() != want:
+            line = text.count("\n", 0, m.start()) + 1
+            problems.append(
+                f"{rel}:{line} says {m.group(1).lower()} {note or 'skills'}, "
+                f"there are {want} ({n})")
+
+# The one sentence the four manifests and the English README share.
+shared = r"\b(\w+) skills that make an AI coding agent"
+for rel in [".claude-plugin/plugin.json", ".claude-plugin/marketplace.json",
+            ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json",
+            "README.md"]:
+    word_at(rel, shared, EN[n])
+word_at("README-ID.md", r"\b(\w+) skill yang membuat AI coding agent", ID[n])
+
+# What uninstall takes away is the same count, said twice in each language.
+word_at("README.md", r"are (\w+) folders under the agent's skills directory",
+        EN[n], "folders")
+word_at("README.md", r"removes those (\w+) folders", EN[n], "folders")
+word_at("README-ID.md", r"berupa (\w+) folder di bawah direktori skill agent",
+        ID[n], "folder")
+
+# And the split has to add up to the total, not to the total it used to be.
+codex = open(os.path.join(root, ".codex-plugin/plugin.json"), encoding="utf-8").read()
+truth = re.search(r"\b(\w+) skills decide what is true", codex, re.I)
+rest = re.search(r"\b(\w+) more decide what survives", codex, re.I)
+if not truth or not rest:
+    problems.append(".codex-plugin/plugin.json: the longDescription no longer "
+                    "splits the skills the way this check reads it")
+else:
+    try:
+        total = EN.index(truth.group(1).lower()) + EN.index(rest.group(1).lower())
+    except ValueError:
+        total = -1
+    if total != n:
+        problems.append(
+            f".codex-plugin/plugin.json: longDescription splits the skills "
+            f"{truth.group(1).lower()} plus {rest.group(1).lower()}, which is "
+            f"{total}, not {n}")
+
+for p in problems:
+    print(f"  {R}FAIL{O}", p)
+if not problems:
+    print(f"  {G}ok{O}   every written-out skill count says {EN[n]}, in both languages")
+sys.exit(1 if problems else 0)
+COUNTS
+then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); fi
+
+# The benchmark README says how many cases it runs, in prose and again as a
+# table. Both are written by hand and the table was the one kept up to date:
+# eight rows under a paragraph that said six.
+if python3 - "$ROOT" <<'CASES'
+import glob, os, re, sys
+_c = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+G = "\033[32m" if _c else ""
+R = "\033[31m" if _c else ""
+O = "\033[0m" if _c else ""
+root = sys.argv[1]
+EN = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+      "nine", "ten", "eleven", "twelve"]
+cases = sorted(os.path.basename(os.path.dirname(f))
+               for f in glob.glob(os.path.join(root, "evals", "*", "case.yaml")))
+n = len(cases)
+rel = "evals/README.md"
+text = open(os.path.join(root, rel), encoding="utf-8").read()
+problems = []
+for pattern in [r"^(\w+) cases, run twice each",
+                r"^(\w+) cases is a small suite",
+                r"behaviour on these (\w+) failures"]:
+    m = re.search(pattern, text, re.M | re.I)
+    if not m:
+        problems.append(f"{rel}: this check reads a sentence that is gone: {pattern}")
+    elif m.group(1).lower() != EN[n]:
+        line = text.count("\n", 0, m.start()) + 1
+        problems.append(f"{rel}:{line} says {m.group(1).lower()} cases, there are {EN[n]} ({n})")
+listed = set(re.findall(r"^\| `([a-z0-9-]+)` \|", text, re.M))
+for name in cases:
+    if name not in listed:
+        problems.append(f"{rel}: the table does not list the case {name}")
+for name in sorted(listed - set(cases)):
+    problems.append(f"{rel}: the table lists {name}, which has no case.yaml")
+for p in problems:
+    print(f"  {R}FAIL{O}", p)
+if not problems:
+    print(f"  {G}ok{O}   evals/README.md counts and lists all {n} cases")
+sys.exit(1 if problems else 0)
+CASES
+then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); fi
+
 # --- the number in the README is part of the README ---------------------------
 # A count written in prose goes stale the first time someone adds a check and
 # forgets, so the suite reads its own figure back out of the README. This check

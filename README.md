@@ -382,8 +382,8 @@ The ref has to exist in the repository. `main` is the moving target and
 
 Every change is marked and reversible.
 
-**Skills** are six folders under the agent's skills directory. Uninstall
-removes those six folders and nothing beside them.
+**Skills** are seven folders under the agent's skills directory. Uninstall
+removes those seven folders and nothing beside them.
 
 **Rules** go into the agent's instruction file between two markers:
 
@@ -505,14 +505,15 @@ sh test/run.sh
 ```
 
 The suite installs into a temporary `HOME`, so it never touches your real
-configuration. It runs 89 checks: the skills validate against the spec and are
+configuration. It runs 91 checks: the skills validate against the spec and are
 all named in the routing block and the hook message, the hook script answers
 both host contracts and survives malformed input, the rules block is idempotent
 and leaves the user's own text where and as it was written, a damaged marker
 pair is refused rather than acted on, an unknown `--agent` name fails loudly,
 the version number reads the same in all fifteen places it is written and the
-changelog names the version the package actually holds, and an install followed
-by an uninstall gives the files back byte for byte.
+changelog names the version the package actually holds, every count written out
+in words matches what is on disk, and an install followed by an uninstall gives
+the files back byte for byte.
 
 ## Why these seven, and not more
 

@@ -38,10 +38,18 @@ changelog cannot claim a version the package does not hold.
   so a release could have shipped a package disagreeing with itself and a
   picture showing the old number. Four plugin manifests were the only version
   sites the suite guarded.
+- The seventh skill, `security-assessment`, landed without the counts written
+  out in prose following it. All four plugin manifests advertised "Six skills",
+  including the marketplace description a person reads before installing, and
+  the Codex long description split the total as four plus two. Both READMEs
+  still said uninstall removes six folders. `evals/README.md` said six cases
+  under a table listing eight.
+- Two checks that read those counts back out of the directory, in English and
+  Indonesian, so the next skill or case cannot land quietly again.
 
 ### Changed
 
-- The suite runs 89 checks, up from 80, and both READMEs say so.
+- The suite runs 91 checks, up from 80, and both READMEs say so.
 - CI compiles `tools` alongside `hooks`.
 
 ## [1.0.0] - 2026-09-20
