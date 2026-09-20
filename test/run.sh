@@ -758,6 +758,72 @@ sys.exit(1 if problems else 0)
 MANIFEST
 then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); fi
 
+# --- the version number says the same thing everywhere ------------------------
+# 1.0.0 is spelled out in fifteen places across fourteen files, and two of them
+# are SVGs drawing the installer's banner, which is the last file anyone thinks
+# to grep at release time. tools/version.py holds the only list of those places
+# and is the only thing allowed to rewrite them. What follows checks the
+# package agrees with itself today, and then checks the checker has teeth,
+# because a guard that cannot fail is worse than no guard at all.
+group "version"
+if python3 "$ROOT/tools/version.py" check; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+fi
+
+# A copy to damage. version.py takes its root from its own path, so running the
+# copy's script measures the copy and never this working tree.
+vcopy="$SANDBOX/version"
+mkdir -p "$vcopy"
+(cd "$ROOT" && tar -cf - --exclude .git .) | (cd "$vcopy" && tar -xf -)
+
+vskill=""
+for vd in "$vcopy"/skills/*/; do vskill=$(basename "$vd"); break; done
+sed 's/^  version: ".*"/  version: "9.9.9"/' "$vcopy/skills/$vskill/SKILL.md" \
+  > "$vcopy/skills/$vskill/SKILL.md.new"
+mv "$vcopy/skills/$vskill/SKILL.md.new" "$vcopy/skills/$vskill/SKILL.md"
+vout=$(python3 "$vcopy/tools/version.py" check 2>&1 || true)
+if python3 "$vcopy/tools/version.py" check >/dev/null 2>&1; then
+  fail "a skill frontmatter drifted to 9.9.9 and the check still passed"
+else
+  case "$vout" in
+    *"$vskill"*) pass "a drifted skill version fails the check, and is named" ;;
+    *) fail "the check failed but did not name $vskill: $vout" ;;
+  esac
+fi
+sed 's/^  version: ".*"/  version: "1.0.0"/' "$vcopy/skills/$vskill/SKILL.md" \
+  > "$vcopy/skills/$vskill/SKILL.md.new"
+mv "$vcopy/skills/$vskill/SKILL.md.new" "$vcopy/skills/$vskill/SKILL.md"
+
+# The list can only guard what it knows about, so the sweep looks for the
+# number in places the list has never heard of.
+# Built from a variable, never spelled out: a literal here would be a real
+# unguarded version inside the suite, and the sweep would be right to say so.
+vstray="0.9.0"
+printf '\n<!-- reethink %s -->\n' "$vstray" >> "$vcopy/SECURITY.md"
+if python3 "$vcopy/tools/version.py" check >/dev/null 2>&1; then
+  fail "a version in a file outside the list went unreported"
+else
+  pass "a version in a file outside the list is reported, not ignored"
+fi
+grep -v "reethink $vstray" "$vcopy/SECURITY.md" > "$vcopy/SECURITY.new"
+mv "$vcopy/SECURITY.new" "$vcopy/SECURITY.md"
+
+# And the bump has to reach all fifteen, not the twelve that are easy to find.
+python3 "$vcopy/tools/version.py" set 2.0.0 >/dev/null 2>&1
+if python3 "$vcopy/tools/version.py" check >/dev/null 2>&1; then
+  pass "one bump command leaves every site agreeing on the new version"
+else
+  fail "after a bump the sites still disagree"
+fi
+left=$(cd "$vcopy" && grep -rl 'reethink 1\.0\.0' assets install.sh 2>/dev/null || true)
+if [ -z "$left" ]; then
+  pass "the bump reaches the version drawn inside the SVGs"
+else
+  fail "these still show the old version after a bump: $left"
+fi
+
 # --- the author is named in every file this package ships ---------------------
 # Credit lives in LICENSE and the README, and it used to stop there: the shell
 # scripts, the hook and the routing block carried a repository URL and no name.
@@ -766,7 +832,8 @@ then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); fi
 group "attribution"
 missing=""
 for f in install.sh uninstall.sh test/run.sh rules/routing.md LICENSE README.md \
-         hooks/reethink_grounding.py hooks/wire_hook.py hooks/reethink-grounding.sh; do
+         hooks/reethink_grounding.py hooks/wire_hook.py hooks/reethink-grounding.sh \
+         tools/version.py; do
   grep -q 'ree_es97' "$ROOT/$f" || missing="$missing $f"
 done
 for dir in "$ROOT"/skills/*/; do

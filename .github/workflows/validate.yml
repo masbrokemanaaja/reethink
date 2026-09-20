@@ -30,7 +30,7 @@ jobs:
           sh -n hooks/reethink-grounding.sh
 
       - name: Python compiles
-        run: python3 -m compileall -q hooks
+        run: python3 -m compileall -q hooks tools
 
       - name: Test suite
         env:

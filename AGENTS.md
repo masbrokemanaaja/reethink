@@ -39,6 +39,37 @@ same trigger. Five of the current seven decide what is true; two decide how the
 answer reaches the reader, and those two stop at the conversation: they never
 govern the code, the documentation or the commit messages.
 
+## Changing the version
+
+The number is written in fifteen places across fourteen files: `install.sh`,
+the pinning example in its own comment, four plugin manifests, the frontmatter
+of every skill, and the banner drawn inside `assets/install.svg` and
+`assets/uninstall.svg`. Nobody greps an SVG at release time, which is the whole
+reason this is a tool and not a habit.
+
+```sh
+python3 tools/version.py list      every site and what it currently holds
+python3 tools/version.py check     they all agree with install.sh
+python3 tools/version.py set 1.1.0 rewrite all fifteen in one pass
+```
+
+`set` replaces only the matched digits, so JSON keeps its formatting and the
+SVGs keep their markup. Run `sh test/run.sh` after it, then commit and tag.
+
+`check` runs inside the suite, and it does a second job the list cannot: it
+sweeps every file in the package for a version string shaped like reethink's
+own that sits outside `SITES`. A new home for the number is reported as a
+failure rather than left to go stale, so a new home gets added to `SITES`
+before the suite goes green again. Skills are matched by glob, so an eighth
+skill is covered the day it is added.
+
+Two things to know before a release. The banner line is the longest text in
+both SVGs and the canvas is 570px wide, which leaves roughly four characters
+of headroom at that font size; this is estimated from the monospace advance
+ratio, not rendered, so a long prerelease string like `1.1.0-rc.1` needs the
+picture looked at. And `v1.0.0` in the READMEs names the first release tag,
+which is a fact about the past, so it is not a site and does not move.
+
 ## Changing the hook
 
 `hooks/README.md` documents both contracts, which of the three supported

@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""Every place reethink writes its own version number, in one list.
+
+The number is not stored once. It is spelled out in the installer, in four
+plugin manifests, in the frontmatter of every skill, and inside two SVGs that
+draw the installer's own banner. A release that edits some of them ships a
+package disagreeing with itself, and a picture is the easiest one to forget
+because nothing about an SVG looks like a version file.
+
+    python3 tools/version.py check        every site agrees with install.sh
+    python3 tools/version.py list         print every site and what it holds
+    python3 tools/version.py set 1.1.0    rewrite every site in one pass
+
+`check` does a second job the list alone cannot do: it sweeps every file in
+the package for a string that looks like reethink's own version but sits
+outside the list, and reports it. A number that found a new home is the failure this file
+exists to catch, so a new home has to be added to SITES before the suite goes
+green again.
+
+`set` rewrites only the matched digits and leaves every other byte alone. It
+does not reformat JSON, because a formatter is how a file picks up changes
+nobody asked for.
+
+reethink, by ree_es97 (https://reetech.web.id)
+MIT licensed. https://github.com/masbrokemanaaja/reethink
+"""
+
+import fnmatch
+import glob
+import os
+import re
+import subprocess
+import sys
+
+# Where the version lives. Each entry is a path pattern relative to the
+# repository root and a regex whose group "v" is the version itself. A glob
+# covers a whole family, so an eighth skill is guarded the day it is added
+# without anyone remembering to come back here.
+SITES = (
+    ("install.sh", r'^VERSION="(?P<v>[^"]*)"'),
+    ("install.sh", r"REETHINK_REF=v(?P<v>\d[\w.+-]*)"),
+    (".claude-plugin/plugin.json", r'"version":\s*"(?P<v>[^"]*)"'),
+    (".claude-plugin/marketplace.json", r'"version":\s*"(?P<v>[^"]*)"'),
+    (".codex-plugin/plugin.json", r'"version":\s*"(?P<v>[^"]*)"'),
+    (".cursor-plugin/plugin.json", r'"version":\s*"(?P<v>[^"]*)"'),
+    ("skills/*/SKILL.md", r'^  version: "(?P<v>[^"]*)"'),
+    ("assets/install.svg", r"reethink (?P<v>\d[\w.+-]*)"),
+    ("assets/uninstall.svg", r"reethink (?P<v>\d[\w.+-]*)"),
+)
+
+# install.sh holds the number the rest are compared against.
+SOURCE = "install.sh"
+SOURCE_PATTERN = r'^VERSION="(?P<v>[^"]*)"'
+
+# Shapes a reethink version takes in this repository. Anything matching one of
+# these and not already covered by SITES is an unguarded site, whatever its
+# current value happens to be.
+SWEEP = (
+    r"reethink[ @/-]v?(?P<v>\d+\.\d+\.\d+[\w.+-]*)",
+    r"REETHINK_REF=v?(?P<v>\d+\.\d+\.\d+[\w.+-]*)",
+    r'"version"\s*:\s*"(?P<v>\d+\.\d+\.\d+[\w.+-]*)"',
+    r'^\s*version:\s*"?(?P<v>\d+\.\d+\.\d+[\w.+-]*)"?',
+    r'^VERSION=["\']?(?P<v>\d+\.\d+\.\d+[\w.+-]*)',
+)
+
+# The sweep skips this file, because the shapes above are quoted here and
+# would each look like an unguarded site. Binary files drop out on their own,
+# when reading them as UTF-8 fails.
+SWEEP_SKIP = ("tools/version.py",)
+
+SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
+
+
+def root():
+    """The repository root, derived from this file rather than the cwd."""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def read(path):
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+def line_of(text, offset):
+    return text.count("\n", 0, offset) + 1
+
+
+def current():
+    """The version install.sh declares, or None if the declaration is gone."""
+    m = re.search(SOURCE_PATTERN, read(os.path.join(root(), SOURCE)), re.M)
+    return m.group("v") if m else None
+
+
+def occurrences():
+    """Every version occurrence SITES knows about, plus the sites that missed.
+
+    Returns (found, missing). Each found entry is a dict with the relative
+    path, the line, the value, and the span of the digits inside the file.
+    Each missing entry is the path pattern that matched no file, or the file
+    that matched no version.
+    """
+    r = root()
+    found = []
+    missing = []
+    for path_pattern, pattern in SITES:
+        paths = sorted(glob.glob(os.path.join(r, path_pattern)))
+        if not paths:
+            missing.append("%s: no file matches this path" % path_pattern)
+            continue
+        rx = re.compile(pattern, re.M)
+        for path in paths:
+            rel = os.path.relpath(path, r)
+            text = read(path)
+            hits = list(rx.finditer(text))
+            if not hits:
+                missing.append("%s: no version matches %s" % (rel, pattern))
+                continue
+            for m in hits:
+                found.append(
+                    {
+                        "path": path,
+                        "rel": rel,
+                        "line": line_of(text, m.start("v")),
+                        "value": m.group("v"),
+                        "span": m.span("v"),
+                    }
+                )
+    return found, missing
+
+
+def tracked():
+    """Every file in the package, relative to the root.
+
+    git is asked first because it already knows what is shipped and what is
+    local noise. A downloaded tarball has no checkout, so the walk below
+    answers there instead of leaving the sweep with nothing to read.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "-C", root(), "ls-files", "-z"],
+            capture_output=True,
+            check=True,
+        ).stdout.decode("utf-8")
+        names = [p for p in out.split("\0") if p]
+        if names:
+            return names
+    except (OSError, subprocess.CalledProcessError, UnicodeDecodeError):
+        pass
+    r = root()
+    ignored = gitignore_rules(r)
+    names = []
+    for base, dirs, files in os.walk(r):
+        rel_base = os.path.relpath(base, r)
+        dirs[:] = sorted(
+            d
+            for d in dirs
+            if d != ".git" and not is_ignored(join_rel(rel_base, d), ignored)
+        )
+        for name in sorted(files):
+            rel = join_rel(rel_base, name)
+            if not is_ignored(rel, ignored):
+                names.append(rel)
+    return names
+
+
+def join_rel(base, name):
+    return name if base == "." else "%s/%s" % (base.replace(os.sep, "/"), name)
+
+
+def gitignore_rules(r):
+    """The .gitignore lines this file understands, as (pattern, anchored).
+
+    A deliberate subset: no negation, no "**", no per-directory .gitignore.
+    git is asked for the file list first and only fails on a downloaded
+    tarball, which has no ignored output in it to begin with. The subset
+    exists so a working tree without git does not report generated eval
+    results as version sites.
+    """
+    path = os.path.join(r, ".gitignore")
+    if not os.path.isfile(path):
+        return []
+    rules = []
+    for line in read(path).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or line.startswith("!"):
+            continue
+        line = line.rstrip("/").lstrip("/")
+        if line:
+            rules.append((line, "/" in line))
+    return rules
+
+
+def is_ignored(rel, rules):
+    for pattern, anchored in rules:
+        if anchored:
+            if rel == pattern or rel.startswith(pattern + "/"):
+                return True
+        elif any(fnmatch.fnmatch(part, pattern) for part in rel.split("/")):
+            return True
+    return False
+
+
+def unguarded(found):
+    """Version strings that look like reethink's own and are not in SITES."""
+    r = root()
+    covered = {}
+    for hit in found:
+        covered.setdefault(hit["rel"], []).append(hit["span"])
+    out = []
+    sweeps = [re.compile(p, re.M) for p in SWEEP]
+    for rel in tracked():
+        if rel in SWEEP_SKIP:
+            continue
+        path = os.path.join(r, rel)
+        if not os.path.isfile(path):
+            continue
+        try:
+            text = read(path)
+        except (OSError, UnicodeDecodeError):
+            continue
+        spans = covered.get(rel, [])
+        for rx in sweeps:
+            for m in rx.finditer(text):
+                start, end = m.span("v")
+                if any(a <= start and end <= b for a, b in spans):
+                    continue
+                if any(o["rel"] == rel and o["start"] == start for o in out):
+                    continue
+                out.append(
+                    {
+                        "rel": rel,
+                        "start": start,
+                        "line": line_of(text, start),
+                        "value": m.group("v"),
+                    }
+                )
+    return sorted(out, key=lambda o: (o["rel"], o["start"]))
+
+
+def cmd_list():
+    version = current()
+    found, missing = occurrences()
+    for hit in found:
+        flag = " " if hit["value"] == version else "*"
+        print("%s %s:%d  %s" % (flag, hit["rel"], hit["line"], hit["value"]))
+    for gap in missing:
+        print("! %s" % gap)
+    print("%d sites, install.sh says %s" % (len(found), version))
+    return 0
+
+
+def cmd_check(quiet=False):
+    version = current()
+    problems = []
+    if version is None:
+        print("  FAIL install.sh no longer declares VERSION")
+        return 1
+    if not SEMVER.match(version):
+        problems.append("install.sh VERSION %r is not a semantic version" % version)
+    found, missing = occurrences()
+    problems.extend(missing)
+    for hit in found:
+        if hit["value"] != version:
+            problems.append(
+                "%s:%d says %s, install.sh says %s"
+                % (hit["rel"], hit["line"], hit["value"], version)
+            )
+    for stray in unguarded(found):
+        problems.append(
+            "%s:%d holds %s outside tools/version.py SITES, so a bump would "
+            "miss it" % (stray["rel"], stray["line"], stray["value"])
+        )
+    for p in problems:
+        print("  FAIL", p)
+    if not problems and not quiet:
+        files = len({hit["rel"] for hit in found})
+        print(
+            "  ok   %d version sites in %d files all say %s"
+            % (len(found), files, version)
+        )
+    return 1 if problems else 0
+
+
+def cmd_set(version):
+    if not SEMVER.match(version):
+        print("not a semantic version: %s" % version, file=sys.stderr)
+        return 2
+    found, missing = occurrences()
+    for gap in missing:
+        print("cannot bump: %s" % gap, file=sys.stderr)
+    if missing:
+        return 1
+    by_file = {}
+    for hit in found:
+        by_file.setdefault(hit["path"], []).append(hit)
+    changed = 0
+    for path, hits in sorted(by_file.items()):
+        stale = [h for h in hits if h["value"] != version]
+        if not stale:
+            # Nothing to say and nothing to write. A file already at the right
+            # version keeps its timestamp.
+            continue
+        text = read(path)
+        # Right to left, so an earlier replacement cannot move a later span.
+        for hit in sorted(hits, key=lambda h: h["span"][0], reverse=True):
+            start, end = hit["span"]
+            text = text[:start] + version + text[end:]
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        changed += len(stale)
+        was = ", ".join(sorted({h["value"] for h in stale}))
+        print(
+            "%s  %s -> %s (%d)"
+            % (os.path.relpath(path, root()), was, version, len(stale))
+        )
+    print("%d of %d sites rewritten to %s" % (changed, len(found), version))
+    print("next: sh test/run.sh, then commit and tag v%s" % version)
+    return 0
+
+
+def main(argv):
+    action = argv[1] if len(argv) > 1 else "check"
+    if action == "check":
+        return cmd_check(quiet="--quiet" in argv)
+    if action == "list":
+        return cmd_list()
+    if action == "set":
+        if len(argv) < 3:
+            print("usage: version.py set <version>", file=sys.stderr)
+            return 2
+        return cmd_set(argv[2])
+    print(__doc__.strip(), file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

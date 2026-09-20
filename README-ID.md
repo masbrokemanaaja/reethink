@@ -523,13 +523,13 @@ sh test/run.sh
 ```
 
 Suite-nya memasang ke `HOME` sementara, jadi tidak pernah menyentuh konfigurasi
-asli Anda. Ia menjalankan 80 pemeriksaan: skill-nya valid terhadap spesifikasi
+asli Anda. Ia menjalankan 85 pemeriksaan: skill-nya valid terhadap spesifikasi
 dan semuanya disebut di blok routing serta pesan hook, skrip hook menjawab
 kedua kontrak host dan bertahan terhadap input rusak, blok rules idempoten dan
 membiarkan teks pengguna di tempat dan bentuk yang sama, pasangan marker yang
 rusak ditolak alih-alih dijalankan, nama `--agent` yang tidak dikenal gagal
-dengan keras, dan install yang diikuti uninstall mengembalikan file-nya byte
-for byte.
+dengan keras, nomor versi terbaca sama di kelima belas tempat ia ditulis, dan
+install yang diikuti uninstall mengembalikan file-nya byte for byte.
 
 ## Kenapa tujuh, dan tidak lebih
 
