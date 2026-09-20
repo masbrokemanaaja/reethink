@@ -12,6 +12,14 @@ changelog cannot claim a version the package does not hold.
 
 ## [Unreleased]
 
+### Fixed
+
+- A check added in 1.1.0 used `A && B || C`, which the shellcheck on Ubuntu
+  flags as SC2015 and the older 0.11.0 on this machine does not, so CI went
+  red on the release commit. Rewritten as a loop. CI now prints the shellcheck
+  version it used, because a warning that only appears there is otherwise a
+  mystery.
+
 ## [1.1.0] - 2026-09-20
 
 ### Added

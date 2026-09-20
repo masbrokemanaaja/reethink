@@ -834,7 +834,12 @@ if python3 "$vcopy/tools/version.py" check >/dev/null 2>&1; then
 else
   fail "after a bump the sites still disagree"
 fi
-left=$(cd "$vcopy" && grep -rl "reethink $vprev" assets install.sh 2>/dev/null || true)
+left=""
+for vf in "$vcopy"/assets/*.svg "$vcopy/install.sh"; do
+  if grep -q "reethink $vprev" "$vf" 2>/dev/null; then
+    left="$left $vf"
+  fi
+done
 if [ -z "$left" ]; then
   pass "the bump reaches the version drawn inside the SVGs"
 else
