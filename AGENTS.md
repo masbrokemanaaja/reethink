@@ -16,7 +16,10 @@ is "verify instead of assuming" does not get to ship unverified changes.
 ## House rules
 
 - POSIX `sh` only in the shell scripts, no bashisms. `shellcheck --shell=sh`
-  must stay clean; CI runs it.
+  must stay clean; CI runs it. Note that CI's is older: apt on
+  `ubuntu-latest` ships 0.9.0 and brew ships 0.11.0, and 0.9.0 still reports
+  SC2015 on `A && B || C` where 0.11.0 has stopped. Clean locally is not
+  clean in CI. The ShellCheck step prints its version so the gap is visible.
 - Python standard library only, and it must run under the `python3` that ships
   with macOS and with a plain Ubuntu image. No dependencies to install.
 - Anything written into a user's file is marked and reversible. New writes need

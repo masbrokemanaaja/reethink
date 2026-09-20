@@ -14,11 +14,12 @@ changelog cannot claim a version the package does not hold.
 
 ### Fixed
 
-- A check added in 1.1.0 used `A && B || C`, which the shellcheck on Ubuntu
-  flags as SC2015 and the older 0.11.0 on this machine does not, so CI went
-  red on the release commit. Rewritten as a loop. CI now prints the shellcheck
-  version it used, because a warning that only appears there is otherwise a
-  mystery.
+- A check added in 1.1.0 used `A && B || C` and turned CI red on the release
+  commit. apt on `ubuntu-latest` installs shellcheck 0.9.0, which still
+  reports SC2015 there, while 0.11.0 from brew does not report it at all, so
+  the warning was invisible until it was pushed. The line is a loop now, and
+  the ShellCheck step prints its version, because clean locally does not mean
+  clean in CI when the two are three minor versions apart.
 
 ## [1.1.0] - 2026-09-20
 

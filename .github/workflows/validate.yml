@@ -42,9 +42,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: ShellCheck
-        # The version is printed because it is usually ahead of what a
-        # contributor has locally, and a warning that only appears here is
-        # otherwise a mystery. SC2015 has arrived that way twice.
+        # apt on ubuntu-latest ships shellcheck 0.9.0, which is behind
+        # what brew installs, and 0.9.0 still reports SC2015 where 0.11.0 has
+        # stopped. Clean locally therefore does not mean clean here, so the
+        # version is printed. SC2015 has arrived through that gap twice.
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq shellcheck
