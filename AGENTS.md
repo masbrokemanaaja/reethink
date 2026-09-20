@@ -70,6 +70,20 @@ touched. It replaces only the matched digits, so JSON keeps its formatting and
 the SVGs keep their markup. Then `sh test/run.sh`, commit, and
 `git tag -a v1.1.0`.
 
+Push the tag, wait for CI, and publish the release from the same text:
+
+```sh
+V=1.1.0
+python3 tools/version.py notes "$V" \
+  | gh release create "v$V" --verify-tag -t "reethink $V" -F -
+```
+
+`notes` prints that version's section of the changelog and appends the compare
+link, so the release page says what a person gets rather than listing commit
+subjects. Nothing here parses commit messages, so they do not have to be
+`feat:` or `fix:` to make a readable release. `--verify-tag` refuses to invent
+a tag that was never pushed.
+
 `check` runs inside the suite, and it does two jobs the list cannot. It sweeps
 every file in the package for a version string shaped like reethink's own that
 sits outside `SITES`, so a new home for the number is reported as a failure

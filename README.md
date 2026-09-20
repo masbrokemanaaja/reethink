@@ -505,7 +505,7 @@ sh test/run.sh
 ```
 
 The suite installs into a temporary `HOME`, so it never touches your real
-configuration. It runs 91 checks: the skills validate against the spec and are
+configuration. It runs 95 checks: the skills validate against the spec and are
 all named in the routing block and the hook message, the hook script answers
 both host contracts and survives malformed input, the rules block is idempotent
 and leaves the user's own text where and as it was written, a damaged marker

@@ -12,6 +12,16 @@ changelog cannot claim a version the package does not hold.
 
 ## [Unreleased]
 
+### Added
+
+- `tools/version.py notes <version>` prints that release's section of the
+  changelog and appends its compare link, so `gh release create -F -` can
+  publish the text that was already written. No commit message is parsed, so
+  they do not have to carry `feat:` or `fix:` prefixes to produce a readable
+  release page. Four checks cover it: the section comes out whole, it stops
+  at the next heading, it ends with the diff against the previous tag, and a
+  version that was never released is refused.
+
 ### Fixed
 
 - A check added in 1.1.0 used `A && B || C` and turned CI red on the release

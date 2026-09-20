@@ -871,6 +871,28 @@ else
   fail "the refused release left install.sh rewritten anyway"
 fi
 
+# The release body is the changelog section, so it has to come out whole, stop
+# at the next heading, and refuse a version that was never released.
+notes=$(python3 "$vcopy/tools/version.py" notes 2.0.0)
+case "$notes" in
+  *"A line for the suite to release."*) pass "notes prints that release's own section" ;;
+  *) fail "notes did not return the 2.0.0 section: $notes" ;;
+esac
+# A section that ran on would have to drag the next heading in with it.
+case "$notes" in
+  *"## ["*) fail "notes ran past the heading into the release below it" ;;
+  *) pass "and stops before the release below it" ;;
+esac
+case "$notes" in
+  *"/compare/v$vprev...v2.0.0"*) pass "and ends with the diff against the previous tag" ;;
+  *) fail "notes does not link the diff for 2.0.0" ;;
+esac
+if python3 "$vcopy/tools/version.py" notes 9.9.9 >/dev/null 2>&1; then
+  fail "notes invented a section for a version that was never released"
+else
+  pass "notes refuses a version the changelog does not have"
+fi
+
 # And the changelog is checked the other way round too.
 sed 's/^## \[2\.0\.0\] - /## [9.9.9] - /' "$vcopy/CHANGELOG.md" > "$vcopy/CL.new"
 mv "$vcopy/CL.new" "$vcopy/CHANGELOG.md"

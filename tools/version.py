@@ -10,6 +10,7 @@ because nothing about an SVG looks like a version file.
     python3 tools/version.py check        every site agrees with install.sh
     python3 tools/version.py list         print every site and what it holds
     python3 tools/version.py set 1.1.0    rewrite every site in one pass
+    python3 tools/version.py notes 1.1.0  that release's section of the changelog
 
 `check` does a second job the list alone cannot do: it sweeps every file in
 the package for a string that looks like reethink's own version but sits
@@ -20,6 +21,13 @@ green again.
 `set` rewrites only the matched digits and leaves every other byte alone. It
 does not reformat JSON, because a formatter is how a file picks up changes
 nobody asked for.
+
+`notes` prints one release's section so the GitHub release body is the text
+already written rather than a list of commit subjects:
+
+    V=1.1.0
+    python3 tools/version.py notes "$V" \\
+      | gh release create "v$V" --verify-tag -t "reethink $V" -F -
 
 reethink, by ree_es97 (https://reetech.web.id)
 MIT licensed. https://github.com/masbrokemanaaja/reethink
@@ -287,6 +295,44 @@ def changelog_problems(version):
     return problems
 
 
+def changelog_notes(version):
+    """One release's section of the changelog, as a release body.
+
+    The heading is left out because the release carries the version in its
+    title, and the compare link for that version is appended, because a
+    release page is where somebody goes looking for the diff.
+    """
+    text = read(changelog_path())
+    start = None
+    for m in RELEASED.finditer(text):
+        if m.group("v") == version:
+            start = m.end()
+            break
+    if start is None:
+        raise ValueError(
+            "%s has no section for %s. Released versions: %s"
+            % (CHANGELOG, version,
+               ", ".join(m.group("v") for m in RELEASED.finditer(text)) or "none")
+        )
+    # The section runs to the next heading, or to the footer that follows the
+    # last one: the attribution line and the link definitions.
+    ends = [m.start() for m in RELEASED.finditer(text, start)]
+    for pattern in (r"^## ", r"^Built by ", r"^\[[^\]]+\]: http"):
+        m = re.search(pattern, text[start:], re.M)
+        if m:
+            ends.append(start + m.start())
+    body = text[start : min(ends)] if ends else text[start:]
+    link = re.search(r"^\[%s\]: (\S+)" % re.escape(version), text, re.M)
+    body = body.strip()
+    if link:
+        url = link.group(1)
+        # The first release has no predecessor, so its link is the tag itself
+        # rather than a comparison, and calling that a diff would be a lie.
+        label = "Full diff" if "/compare/" in url else "Tag"
+        body += "\n\n%s: %s" % (label, url)
+    return body + "\n"
+
+
 def changelog_release(version, today=None):
     """Turn Unreleased into a dated section for `version`, and fix the links.
 
@@ -438,6 +484,13 @@ def main(argv):
             print("usage: version.py set <version>", file=sys.stderr)
             return 2
         return cmd_set(argv[2])
+    if action == "notes":
+        try:
+            sys.stdout.write(changelog_notes(argv[2] if len(argv) > 2 else current()))
+        except (OSError, ValueError) as exc:
+            print(exc, file=sys.stderr)
+            return 1
+        return 0
     print(__doc__.strip(), file=sys.stderr)
     return 2
 
