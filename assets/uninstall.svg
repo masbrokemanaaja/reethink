@@ -6,7 +6,7 @@
   <g fill="#484f58"><circle cx="26" cy="21" r="5"/><circle cx="45" cy="21" r="5"/><circle cx="64" cy="21" r="5"/></g>
   <g font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13.5" letter-spacing="0">
     <text x="26" y="72" xml:space="preserve"><tspan fill="#58a6ff" font-weight="600">$ </tspan><tspan fill="#c9d1d9">sh uninstall.sh</tspan></text>
-    <text x="26" y="116" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">reethink 1.0.0</tspan><tspan fill="#7d8590">  grounding skills and a hook for AI coding agents</tspan></text>
+    <text x="26" y="116" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">reethink 1.1.0</tspan><tspan fill="#7d8590">  grounding skills and a hook for AI coding agents</tspan></text>
     <text x="26" y="138" xml:space="preserve"><tspan fill="#7d8590">by ree_es97, https://reetech.web.id</tspan></text>
     <text x="26" y="182" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">Claude Code</tspan><tspan fill="#7d8590"> ~/.claude</tspan></text>
     <text x="26" y="204" xml:space="preserve"><tspan fill="#c9d1d9">  </tspan><tspan fill="#3fb950" font-weight="600">+</tspan><tspan fill="#c9d1d9"> skills removed from ~/.claude/skills</tspan></text>

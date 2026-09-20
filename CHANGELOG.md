@@ -12,6 +12,8 @@ changelog cannot claim a version the package does not hold.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-20
+
 ### Added
 
 - `tools/version.py`, the one list of every place the version number is
@@ -87,5 +89,6 @@ First release.
 
 Built by [ree_es97](https://reetech.web.id). MIT licensed.
 
-[Unreleased]: https://github.com/masbrokemanaaja/reethink/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/masbrokemanaaja/reethink/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/masbrokemanaaja/reethink/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/masbrokemanaaja/reethink/releases/tag/v1.0.0
