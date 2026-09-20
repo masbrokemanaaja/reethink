@@ -388,7 +388,8 @@ curl -fsSL https://raw.githubusercontent.com/masbrokemanaaja/reethink/main/insta
 ```
 
 Ref-nya harus ada di repositori. `main` adalah target yang bergerak dan
-`v1.0.0` adalah tag rilis pertama.
+`v1.0.0` adalah tag rilis pertama. Apa yang berubah di tiap rilis ada di
+[CHANGELOG.md](CHANGELOG.md).
 
 ## Apa yang ditulisnya, dan cara membersihkannya
 
@@ -523,13 +524,14 @@ sh test/run.sh
 ```
 
 Suite-nya memasang ke `HOME` sementara, jadi tidak pernah menyentuh konfigurasi
-asli Anda. Ia menjalankan 85 pemeriksaan: skill-nya valid terhadap spesifikasi
+asli Anda. Ia menjalankan 89 pemeriksaan: skill-nya valid terhadap spesifikasi
 dan semuanya disebut di blok routing serta pesan hook, skrip hook menjawab
 kedua kontrak host dan bertahan terhadap input rusak, blok rules idempoten dan
 membiarkan teks pengguna di tempat dan bentuk yang sama, pasangan marker yang
 rusak ditolak alih-alih dijalankan, nama `--agent` yang tidak dikenal gagal
-dengan keras, nomor versi terbaca sama di kelima belas tempat ia ditulis, dan
-install yang diikuti uninstall mengembalikan file-nya byte for byte.
+dengan keras, nomor versi terbaca sama di kelima belas tempat ia ditulis dan
+changelog-nya menyebut versi yang benar-benar dibawa paket, dan install yang
+diikuti uninstall mengembalikan file-nya byte for byte.
 
 ## Kenapa tujuh, dan tidak lebih
 

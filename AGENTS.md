@@ -39,7 +39,7 @@ same trigger. Five of the current seven decide what is true; two decide how the
 answer reaches the reader, and those two stop at the conversation: they never
 govern the code, the documentation or the commit messages.
 
-## Changing the version
+## Releasing a version
 
 The number is written in fifteen places across fourteen files: `install.sh`,
 the pinning example in its own comment, four plugin manifests, the frontmatter
@@ -47,21 +47,36 @@ of every skill, and the banner drawn inside `assets/install.svg` and
 `assets/uninstall.svg`. Nobody greps an SVG at release time, which is the whole
 reason this is a tool and not a habit.
 
+Write what you changed under `## [Unreleased]` in `CHANGELOG.md` while you are
+doing the work, in the reader's terms rather than the commit's. Nothing
+generates those lines from the git history, on purpose: a commit message says
+what moved, and a changelog has to say what is different for the person who
+installed this.
+
 ```sh
 python3 tools/version.py list      every site and what it currently holds
 python3 tools/version.py check     they all agree with install.sh
-python3 tools/version.py set 1.1.0 rewrite all fifteen in one pass
+python3 tools/version.py set 1.1.0 the release itself, in one pass
 ```
 
-`set` replaces only the matched digits, so JSON keeps its formatting and the
-SVGs keep their markup. Run `sh test/run.sh` after it, then commit and tag.
+`set` does four things and stops at the first that will not work. It turns
+`Unreleased` into `## [1.1.0] - <today>`, chains the compare links at the
+bottom onto the previous tag, rewrites all fifteen sites, and refuses outright
+when nothing is written under `Unreleased`, before a single file has been
+touched. It replaces only the matched digits, so JSON keeps its formatting and
+the SVGs keep their markup. Then `sh test/run.sh`, commit, and
+`git tag -a v1.1.0`.
 
-`check` runs inside the suite, and it does a second job the list cannot: it
-sweeps every file in the package for a version string shaped like reethink's
-own that sits outside `SITES`. A new home for the number is reported as a
-failure rather than left to go stale, so a new home gets added to `SITES`
-before the suite goes green again. Skills are matched by glob, so an eighth
-skill is covered the day it is added.
+`check` runs inside the suite, and it does two jobs the list cannot. It sweeps
+every file in the package for a version string shaped like reethink's own that
+sits outside `SITES`, so a new home for the number is reported as a failure
+rather than left to go stale, and that new home gets added to `SITES` before
+the suite goes green again. Skills are matched by glob, so an eighth skill is
+covered the day it is added. It also reads `CHANGELOG.md` and fails when the
+newest heading names a version the package does not hold, when that heading
+has no date, or when a link definition at the bottom is missing. Older
+headings are a record of the past and never move, which is why the changelog
+is checked rather than rewritten.
 
 Two things to know before a release. The banner line is the longest text in
 both SVGs and the canvas is 570px wide, which leaves roughly four characters

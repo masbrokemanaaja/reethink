@@ -21,6 +21,10 @@ that check fail, and put the fix back. A check that passes either way is
 decoration. A package whose whole subject is "verify instead of assuming" does
 not get to ship unverified changes.
 
+Anything a person installing this would notice also gets a line under
+`## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), written for them rather
+than for the diff. Releasing is a separate step and not yours to do.
+
 ## What gets merged quickly
 
 A small change that names what it measured. A version number, a command and

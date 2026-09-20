@@ -25,6 +25,7 @@ reethink, by ree_es97 (https://reetech.web.id)
 MIT licensed. https://github.com/masbrokemanaaja/reethink
 """
 
+import datetime
 import fnmatch
 import glob
 import os
@@ -69,6 +70,18 @@ SWEEP = (
 SWEEP_SKIP = ("tools/version.py",)
 
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
+
+# The changelog is not a site: its older headings are a record of the past and
+# must not move. Only the newest released heading has to agree with install.sh,
+# and `set` is what promotes Unreleased into it.
+CHANGELOG = "CHANGELOG.md"
+REPO = "https://github.com/masbrokemanaaja/reethink"
+RELEASED = re.compile(
+    r"^## \[(?P<v>\d+\.\d+\.\d+[\w.+-]*)\](?: - (?P<date>\d{4}-\d{2}-\d{2}))?"
+    r"[ \t]*$",
+    re.M,
+)
+UNRELEASED = re.compile(r"^## \[Unreleased\][ \t]*$", re.M)
 
 
 def root():
@@ -237,6 +250,91 @@ def unguarded(found):
     return sorted(out, key=lambda o: (o["rel"], o["start"]))
 
 
+def changelog_path():
+    return os.path.join(root(), CHANGELOG)
+
+
+def changelog_problems(version):
+    """What is wrong with the changelog, given the version install.sh holds."""
+    path = changelog_path()
+    if not os.path.isfile(path):
+        return ["%s is missing" % CHANGELOG]
+    text = read(path)
+    problems = []
+    if not UNRELEASED.search(text):
+        problems.append("%s has no '## [Unreleased]' section to collect new work"
+                        % CHANGELOG)
+    releases = list(RELEASED.finditer(text))
+    if not releases:
+        return problems + ["%s lists no released version" % CHANGELOG]
+    newest = releases[0]
+    if newest.group("v") != version:
+        problems.append(
+            "%s:%d has %s at the top, install.sh says %s"
+            % (CHANGELOG, line_of(text, newest.start()), newest.group("v"), version)
+        )
+    if not newest.group("date"):
+        problems.append(
+            "%s:%d has no date on %s, the format is '## [%s] - YYYY-MM-DD'"
+            % (CHANGELOG, line_of(text, newest.start()), newest.group("v"),
+               newest.group("v"))
+        )
+    for label in ["Unreleased"] + [m.group("v") for m in releases]:
+        if ("\n[%s]: " % label) not in text:
+            problems.append(
+                "%s has no link definition for [%s] at the bottom" % (CHANGELOG, label)
+            )
+    return problems
+
+
+def changelog_release(version, today=None):
+    """Turn Unreleased into a dated section for `version`, and fix the links.
+
+    Returns a line describing what happened, or raises ValueError with the
+    reason it will not. Releasing an empty Unreleased is refused: a version
+    with nothing written under it is a step somebody forgot, not a release.
+    """
+    path = changelog_path()
+    text = read(path)
+    releases = list(RELEASED.finditer(text))
+    previous = releases[0].group("v") if releases else None
+    if previous == version:
+        return "%s already has %s at the top" % (CHANGELOG, version)
+    head = UNRELEASED.search(text)
+    if not head:
+        raise ValueError("%s has no '## [Unreleased]' section" % CHANGELOG)
+    body_start = head.end()
+    body_end = releases[0].start() if releases else len(text)
+    links = re.search(r"^\[Unreleased\]: ", text[body_start:], re.M)
+    if links:
+        body_end = min(body_end, body_start + links.start())
+    if not text[body_start:body_end].strip():
+        raise ValueError(
+            "nothing is written under '## [Unreleased]' in %s, so there is "
+            "nothing to release" % CHANGELOG
+        )
+    stamp = today or datetime.date.today().isoformat()
+    text = (
+        text[: head.start()]
+        + "## [Unreleased]\n\n## [%s] - %s" % (version, stamp)
+        + text[head.end() :]
+    )
+    if previous:
+        compare = "%s/compare/v%s...v%s" % (REPO, previous, version)
+    else:
+        compare = "%s/releases/tag/v%s" % (REPO, version)
+    text = re.sub(
+        r"^\[Unreleased\]: .*$",
+        "[Unreleased]: %s/compare/v%s...HEAD\n[%s]: %s" % (REPO, version, version, compare),
+        text,
+        count=1,
+        flags=re.M,
+    )
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    return "%s  Unreleased -> [%s] - %s" % (CHANGELOG, version, stamp)
+
+
 def cmd_list():
     version = current()
     found, missing = occurrences()
@@ -270,13 +368,14 @@ def cmd_check(quiet=False):
             "%s:%d holds %s outside tools/version.py SITES, so a bump would "
             "miss it" % (stray["rel"], stray["line"], stray["value"])
         )
+    problems.extend(changelog_problems(version))
     for p in problems:
         print("  FAIL", p)
     if not problems and not quiet:
         files = len({hit["rel"] for hit in found})
         print(
-            "  ok   %d version sites in %d files all say %s"
-            % (len(found), files, version)
+            "  ok   %d version sites in %d files all say %s, and %s agrees"
+            % (len(found), files, version, CHANGELOG)
         )
     return 1 if problems else 0
 
@@ -290,6 +389,15 @@ def cmd_set(version):
         print("cannot bump: %s" % gap, file=sys.stderr)
     if missing:
         return 1
+    # The changelog goes first, because it is the one that refuses. A version
+    # with nothing written under Unreleased stops here, before fifteen files
+    # have been rewritten and have to be put back.
+    try:
+        note = changelog_release(version)
+    except (OSError, ValueError) as exc:
+        print("cannot bump: %s" % exc, file=sys.stderr)
+        return 1
+    print(note)
     by_file = {}
     for hit in found:
         by_file.setdefault(hit["path"], []).append(hit)
@@ -314,7 +422,8 @@ def cmd_set(version):
             % (os.path.relpath(path, root()), was, version, len(stale))
         )
     print("%d of %d sites rewritten to %s" % (changed, len(found), version))
-    print("next: sh test/run.sh, then commit and tag v%s" % version)
+    print("next: read %s, then sh test/run.sh, then commit and tag v%s"
+          % (CHANGELOG, version))
     return 0
 
 

@@ -373,7 +373,8 @@ curl -fsSL https://raw.githubusercontent.com/masbrokemanaaja/reethink/main/insta
 ```
 
 The ref has to exist in the repository. `main` is the moving target and
-`v1.0.0` is the first release tag.
+`v1.0.0` is the first release tag. What changed in each one is in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## What it writes, and how to get rid of it
 
@@ -504,13 +505,14 @@ sh test/run.sh
 ```
 
 The suite installs into a temporary `HOME`, so it never touches your real
-configuration. It runs 85 checks: the skills validate against the spec and are
+configuration. It runs 89 checks: the skills validate against the spec and are
 all named in the routing block and the hook message, the hook script answers
 both host contracts and survives malformed input, the rules block is idempotent
 and leaves the user's own text where and as it was written, a damaged marker
 pair is refused rather than acted on, an unknown `--agent` name fails loudly,
-the version number reads the same in all fifteen places it is written, and an
-install followed by an uninstall gives the files back byte for byte.
+the version number reads the same in all fifteen places it is written and the
+changelog names the version the package actually holds, and an install followed
+by an uninstall gives the files back byte for byte.
 
 ## Why these seven, and not more
 

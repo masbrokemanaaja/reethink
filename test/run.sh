@@ -778,6 +778,7 @@ vcopy="$SANDBOX/version"
 mkdir -p "$vcopy"
 (cd "$ROOT" && tar -cf - --exclude .git .) | (cd "$vcopy" && tar -xf -)
 
+vprev=$(sed -n 's/^VERSION="\(.*\)"/\1/p' "$vcopy/install.sh")
 vskill=""
 for vd in "$vcopy"/skills/*/; do vskill=$(basename "$vd"); break; done
 sed 's/^  version: ".*"/  version: "9.9.9"/' "$vcopy/skills/$vskill/SKILL.md" \
@@ -811,17 +812,67 @@ grep -v "reethink $vstray" "$vcopy/SECURITY.md" > "$vcopy/SECURITY.new"
 mv "$vcopy/SECURITY.new" "$vcopy/SECURITY.md"
 
 # And the bump has to reach all fifteen, not the twelve that are easy to find.
-python3 "$vcopy/tools/version.py" set 2.0.0 >/dev/null 2>&1
+# The copy gets its own Unreleased entry first. Reusing whatever the working
+# tree happens to hold made this depend on where in the release cycle it was
+# run: straight after a release Unreleased is empty, the bump refused, and
+# under set -eu the whole suite stopped there without saying why.
+python3 - "$vcopy/CHANGELOG.md" <<'FIXTURE'
+import sys
+path = sys.argv[1]
+text = open(path, encoding="utf-8").read()
+head = "## [Unreleased]\n"
+at = text.index(head) + len(head)
+open(path, "w", encoding="utf-8").write(
+    text[:at] + "\n### Added\n\n- A line for the suite to release.\n" + text[at:]
+)
+FIXTURE
+if ! python3 "$vcopy/tools/version.py" set 2.0.0 >/dev/null 2>&1; then
+  fail "the bump refused on a copy with an Unreleased entry written for it"
+fi
 if python3 "$vcopy/tools/version.py" check >/dev/null 2>&1; then
   pass "one bump command leaves every site agreeing on the new version"
 else
   fail "after a bump the sites still disagree"
 fi
-left=$(cd "$vcopy" && grep -rl 'reethink 1\.0\.0' assets install.sh 2>/dev/null || true)
+left=$(cd "$vcopy" && grep -rl "reethink $vprev" assets install.sh 2>/dev/null || true)
 if [ -z "$left" ]; then
   pass "the bump reaches the version drawn inside the SVGs"
 else
   fail "these still show the old version after a bump: $left"
+fi
+
+# The same bump is the release: Unreleased becomes a dated section and the
+# compare links chain onto the previous tag, so the changelog cannot end up
+# naming a version the package does not hold.
+if grep -qE '^## \[2\.0\.0\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$' "$vcopy/CHANGELOG.md"; then
+  pass "the bump turns Unreleased into a dated 2.0.0 section"
+else
+  fail "CHANGELOG.md has no dated 2.0.0 heading after the bump"
+fi
+if grep -q '^\[Unreleased\]: .*/compare/v2\.0\.0\.\.\.HEAD$' "$vcopy/CHANGELOG.md" \
+   && grep -q "^\[2\.0\.0\]: .*/compare/v$vprev\.\.\.v2\.0\.0\$" "$vcopy/CHANGELOG.md"; then
+  pass "and chains the compare links onto the previous tag"
+else
+  fail "the compare links at the bottom of CHANGELOG.md were not updated"
+fi
+
+# Unreleased is empty now, and a release with nothing written under it is a
+# step somebody forgot. It has to stop before fifteen files are rewritten.
+if python3 "$vcopy/tools/version.py" set 3.0.0 >/dev/null 2>&1; then
+  fail "a release with an empty Unreleased section went through"
+elif grep -q '^VERSION="2.0.0"' "$vcopy/install.sh"; then
+  pass "a release with nothing written under Unreleased is refused, and nothing moved"
+else
+  fail "the refused release left install.sh rewritten anyway"
+fi
+
+# And the changelog is checked the other way round too.
+sed 's/^## \[2\.0\.0\] - /## [9.9.9] - /' "$vcopy/CHANGELOG.md" > "$vcopy/CL.new"
+mv "$vcopy/CL.new" "$vcopy/CHANGELOG.md"
+if python3 "$vcopy/tools/version.py" check >/dev/null 2>&1; then
+  fail "CHANGELOG.md claimed 9.9.9 while install.sh said 2.0.0 and the check passed"
+else
+  pass "a changelog naming a version the package does not hold fails the check"
 fi
 
 # --- the author is named in every file this package ships ---------------------
@@ -833,7 +884,7 @@ group "attribution"
 missing=""
 for f in install.sh uninstall.sh test/run.sh rules/routing.md LICENSE README.md \
          hooks/reethink_grounding.py hooks/wire_hook.py hooks/reethink-grounding.sh \
-         tools/version.py; do
+         tools/version.py CHANGELOG.md; do
   grep -q 'ree_es97' "$ROOT/$f" || missing="$missing $f"
 done
 for dir in "$ROOT"/skills/*/; do
