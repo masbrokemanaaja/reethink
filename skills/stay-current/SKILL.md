@@ -17,7 +17,7 @@ metadata:
   author: ree_es97
   homepage: https://reetech.web.id
   source: https://github.com/masbrokemanaaja/reethink
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Stay Current
