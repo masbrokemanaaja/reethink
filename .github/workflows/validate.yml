@@ -28,6 +28,7 @@ jobs:
           sh -n uninstall.sh
           sh -n test/run.sh
           sh -n hooks/reethink-grounding.sh
+          sh -n tools/release.sh
 
       - name: Python compiles
         run: python3 -m compileall -q hooks tools
@@ -50,4 +51,4 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq shellcheck
           shellcheck --version
-          shellcheck --shell=sh install.sh uninstall.sh test/run.sh hooks/reethink-grounding.sh
+          shellcheck --shell=sh install.sh uninstall.sh test/run.sh hooks/reethink-grounding.sh tools/release.sh

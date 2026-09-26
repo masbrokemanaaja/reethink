@@ -568,7 +568,7 @@ sh test/run.sh
 ```
 
 Suite-nya memasang ke `HOME` sementara, jadi tidak pernah menyentuh konfigurasi
-asli Anda. Ia menjalankan 106 pemeriksaan: skill-nya valid terhadap spesifikasi
+asli Anda. Ia menjalankan 112 pemeriksaan: skill-nya valid terhadap spesifikasi
 dan semuanya disebut di blok routing serta pesan hook, skrip hook menjawab
 kedua kontrak host dan bertahan terhadap input rusak, blok rules idempoten dan
 membiarkan teks pengguna di tempat dan bentuk yang sama, pasangan marker yang
@@ -579,7 +579,8 @@ yang ditulis dengan huruf cocok dengan isi direktori, hitungan arah, seed, dan
 rasio palet milik skill desainer dihitung ulang alih-alih dipercaya dan
 pemeriksanya meloloskan kode dan copy yang patuh serta menggagalkan setiap
 ciri slop yang ditanam, termasuk link mati, dan install yang diikuti uninstall mengembalikan file-nya byte
-for byte.
+for byte, serta kenaikan versi yang di-merge merilis dirinya sekali sementara
+merge lain tidak merilis apa pun.
 
 ## Kenapa delapan, dan tidak lebih
 

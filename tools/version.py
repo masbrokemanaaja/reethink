@@ -23,11 +23,9 @@ does not reformat JSON, because a formatter is how a file picks up changes
 nobody asked for.
 
 `notes` prints one release's section so the GitHub release body is the text
-already written rather than a list of commit subjects:
-
-    V=1.1.0
-    python3 tools/version.py notes "$V" \\
-      | gh release create "v$V" --verify-tag -t "reethink $V" -F -
+already written rather than a list of commit subjects. tools/release.sh
+passes it to `gh release create` when a version bump reaches main, from
+.github/workflows/release.yml, so nobody has to run it by hand.
 
 reethink, by ree_es97 (https://reetech.web.id)
 MIT licensed. https://github.com/masbrokemanaaja/reethink
