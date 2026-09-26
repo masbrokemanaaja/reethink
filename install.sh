@@ -28,7 +28,7 @@
 
 set -eu
 
-VERSION="1.1.0"
+VERSION="1.2.0"
 MARK_START="<!-- reethink:start -->"
 MARK_END="<!-- reethink:end -->"
 
@@ -97,7 +97,7 @@ resolve_source() {
   command -v curl >/dev/null 2>&1 || die "no local copy found and curl is not installed"
   SRC=$(mktemp -d) || die "cannot create a temporary directory"
   trap 'rm -rf "$SRC"' EXIT INT TERM
-  # Whatever is on main, unless you pin it: REETHINK_REF=v1.1.0 sh install.sh
+  # Whatever is on main, unless you pin it: REETHINK_REF=v1.2.0 sh install.sh
   ref="${REETHINK_REF:-main}"
   say "${DIM}fetching reethink ($ref)...${OFF}"
   curl -fsSL "https://codeload.github.com/masbrokemanaaja/reethink/tar.gz/$ref" \

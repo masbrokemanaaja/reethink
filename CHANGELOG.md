@@ -13,6 +13,8 @@ change into `main` publishes the release.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-27
+
 ### Added
 
 - Releases publish themselves. `.github/workflows/release.yml` runs on every
@@ -101,6 +103,9 @@ change into `main` publishes the release.
 
 ### Changed
 
+- `version.py set` ends by saying to open a pull request, since merging it
+  is what publishes the release; it used to say to tag the version by hand,
+  which the release workflow now treats as "already released".
 - Every skill count moved from seven to eight, and the cost of loading the
   package moved with it: 5,993 characters at startup instead of 5,109, a
   2,315-character routing block instead of 2,060, and a 1,671-character hook
@@ -197,6 +202,7 @@ First release.
 
 Built by [ree_es97](https://reetech.web.id). MIT licensed.
 
-[Unreleased]: https://github.com/masbrokemanaaja/reethink/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/masbrokemanaaja/reethink/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/masbrokemanaaja/reethink/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/masbrokemanaaja/reethink/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/masbrokemanaaja/reethink/releases/tag/v1.0.0

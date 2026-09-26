@@ -466,8 +466,8 @@ def cmd_set(version):
             % (os.path.relpath(path, root()), was, version, len(stale))
         )
     print("%d of %d sites rewritten to %s" % (changed, len(found), version))
-    print("next: read %s, then sh test/run.sh, then commit and tag v%s"
-          % (CHANGELOG, version))
+    print("next: read %s, then sh test/run.sh, then open a pull request; "
+          "merging it publishes v%s, so do not tag it by hand" % (CHANGELOG, version))
     return 0
 
 
