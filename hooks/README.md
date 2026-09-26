@@ -16,7 +16,7 @@ it injects one short message: the local time is already in the metadata, treat
 your memory as a floor rather than a ceiling, check the installed version
 before stating any API, load the grounding skills when they apply, and label
 claims verified, assumed or untested, plus the two skills that shape every
-reply. About 1,557 characters, once per turn.
+reply. About 1,671 characters, once per turn.
 
 ## The files
 

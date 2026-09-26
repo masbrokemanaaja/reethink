@@ -39,7 +39,8 @@ cleverness in the structure of the code is not.
 
 `grounded-research` covers checking a library fact against the documentation
 instead of recalling it, and `stay-current` covers whether a fact is still true
-today. This skill is the judgement layer over both: what a good solution looks
+today. How the result looks and how people use it belongs to
+`senior-designer`; this skill builds what that one designs. This skill is the judgement layer over both: what a good solution looks
 like, and which option is worth building at all.
 
 ## Areas of expertise
