@@ -436,8 +436,8 @@ def cmd_set(version):
     if missing:
         return 1
     # The changelog goes first, because it is the one that refuses. A version
-    # with nothing written under Unreleased stops here, before fifteen files
-    # have been rewritten and have to be put back.
+    # with nothing written under Unreleased stops here, before every site
+    # has been rewritten and has to be put back.
     try:
         note = changelog_release(version)
     except (OSError, ValueError) as exc:

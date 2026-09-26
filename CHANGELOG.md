@@ -7,12 +7,74 @@ versions follow [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
 New work goes under `Unreleased` as it lands. `python3 tools/version.py set
 <version>` turns that section into a dated release, fixes the compare links,
-and moves the number in the other fifteen places at the same time, so the
-changelog cannot claim a version the package does not hold.
+and moves the number in every other place it is written at the same time, so
+the changelog cannot claim a version the package does not hold.
 
 ## [Unreleased]
 
 ### Added
+
+- An eighth skill, `senior-designer`: a senior UI and UX designer for web and
+  mobile that asks whether a color palette exists before the first design and
+  will not ship the average landing page. Function (information architecture,
+  navigation, platform conventions, a WCAG 2.2 AA floor) comes from the brief;
+  expression is rolled by `scripts/direction.py` from ten axes, with pairs
+  that fight excluded by rule, which leaves 53,871,360 valid directions on the
+  web and 44,892,800 on mobile. Three are offered at a time, six axes apart,
+  and a seed brings one back or keeps the next design away from it.
+  `scripts/palette.py` suggests palettes built in OKLCH whose WCAG ratios are
+  measured before they are shown, audits a user's own colors pair by pair,
+  and keeps a brand color exactly as given, reporting it when it fails rather
+  than correcting it. Every font it can pick was checked against the Google
+  Fonts library, and the usual defaults (Inter, Roboto, Poppins, Montserrat,
+  Space Grotesk and others) are never picked.
+- `senior-designer` writes the chosen direction and palette down and checks
+  the code against them. `scripts/tokens.py spec` records both seeds, the ten
+  axes, the fonts, every palette role and the radii the shape allows in
+  `design-direction.json`; `tokens.py emit` turns that file into a Tailwind v4
+  `@theme` block, which opens with `--color-*: initial` and `--font-*: initial`
+  so the framework's default palette stops generating CSS (checked on Tailwind
+  4.3.3: `text-cyan-400`, `bg-zinc-900` and `bg-white` produce nothing, while
+  `bg-transparent` and `text-current` still work), or into plain `:root`
+  variables. `scripts/verify.py` reads the same file and fails the run on any
+  font, color literal, framework color class, colored glow, gradient text,
+  backdrop blur or corner radius the spec does not allow, and warns on assets
+  hotlinked from other domains. It came from a real redesign: the agent had
+  announced direction 822532 (Fragment Mono, Red Hat Text, duotone) and
+  shipped Inter and Space Grotesk, 220 framework color classes, 84 off-palette
+  colors and five glows, and against its own spec that code passes 0 of 8.
+  Fonts found in a project are no longer treated as brand fonts; when they are
+  overused defaults, the palette question asks about them too.
+- `verify.py` reads the words on the built page too, from
+  `scripts/content.py`. With `--site dist` it fails on any percentage, "3+",
+  year range, multiplier or counted noun that `design-claims.json` does not
+  list with a source, on relative links that do not resolve in the build, and
+  on the spec's own seeds or file name in the copy; it warns on "WCAG" in the
+  copy. `--links` also requests every absolute URL, including one shown inside
+  a copyable command, and fails on 404, 410 and 5xx while only listing sites
+  that refuse scripts (LinkedIn answers 999). Without `--site` the content
+  checks count as failed, not passed. The second run of the reetechweb
+  redesign passed all eight visual checks and fails these on five unsourced
+  numbers, a `curl https://reetech.web.id/bio` that answers 404, and its seeds
+  printed in the footer. `SKILL.md` gains "Copy that can be checked": every
+  fact has a source, a stat with no real number becomes a marked placeholder,
+  what is shown as working has to work, and the process stays out of the
+  product.
+- Eight checks for those two scripts: the count quoted in `SKILL.md` and both
+  READMEs is the one computed, the formula agrees with brute force on the real
+  rules, a seed reproduces its direction, three directions sit six axes apart
+  and break no rule, `--avoid` keeps its distance, no overused font is pooled,
+  the contrast and OKLCH math match WCAG and Oklab reference values, and every
+  suggested palette passes the ratios it prints when measured by a second copy
+  of the WCAG formula. Two more for the spec and the verifier: the spec records
+  what was chosen and the emitted block removes the defaults, and the verifier
+  passes code that follows the spec while failing a fixture that plants each
+  of the eight tells, naming every one. The verifier checks now cover the
+  copy as well: a compliant page with a sourced claim passes, a planted
+  unsourced "100%", a "2021 - 2024", a missing page and the seeds in a footer
+  each fail by name, a run without `--site` fails, a claim with no source
+  fails, and a local HTTP server proves `--links` fails a 404 while only
+  warning on a 999.
 
 - `tools/version.py notes <version>` prints that release's section of the
   changelog and appends its compare link, so `gh release create -F -` can
@@ -22,8 +84,20 @@ changelog cannot claim a version the package does not hold.
   at the next heading, it ends with the diff against the previous tag, and a
   version that was never released is refused.
 
+### Changed
+
+- Every skill count moved from seven to eight, and the cost of loading the
+  package moved with it: 5,993 characters at startup instead of 5,109, a
+  2,315-character routing block instead of 2,060, and a 1,671-character hook
+  message instead of 1,557, because the routing block and the hook now name
+  `senior-designer`. `senior-engineer` is routed for engineering decisions
+  rather than "design decisions", so the two no longer answer to the same
+  word.
+
 ### Fixed
 
+- README-ID.md said uninstall removes "keenam", six, folders while the same
+  sentence said seven were installed. It says eight now, like the English.
 - A check added in 1.1.0 used `A && B || C` and turned CI red on the release
   commit. apt on `ubuntu-latest` installs shellcheck 0.9.0, which still
   reports SC2015 there, while 0.11.0 from brew does not report it at all, so
