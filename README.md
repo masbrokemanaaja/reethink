@@ -547,7 +547,7 @@ sh test/run.sh
 ```
 
 The suite installs into a temporary `HOME`, so it never touches your real
-configuration. It runs 106 checks: the skills validate against the spec and are
+configuration. It runs 112 checks: the skills validate against the spec and are
 all named in the routing block and the hook message, the hook script answers
 both host contracts and survives malformed input, the rules block is idempotent
 and leaves the user's own text where and as it was written, a damaged marker
@@ -558,7 +558,8 @@ in words matches what is on disk, the designer's direction count, seeds and
 palette ratios are recomputed rather than trusted and its verifier passes
 compliant code and copy and fails every planted tell by name, dead links
 included, and an install followed by
-an uninstall gives the files back byte for byte.
+an uninstall gives the files back byte for byte, and a merged version bump
+releases itself once while any other merge releases nothing.
 
 ## Why these eight, and not more
 

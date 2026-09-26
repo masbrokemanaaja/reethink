@@ -75,22 +75,29 @@ python3 tools/version.py set 1.1.0 the release itself, in one pass
 bottom onto the previous tag, rewrites every site, and refuses outright
 when nothing is written under `Unreleased`, before a single file has been
 touched. It replaces only the matched digits, so JSON keeps its formatting and
-the SVGs keep their markup. Then `sh test/run.sh`, commit, and
-`git tag -a v1.1.0`.
+the SVGs keep their markup. Then `sh test/run.sh`, commit on a branch, and
+open a pull request.
 
-Push the tag, wait for CI, and publish the release from the same text:
+Merging that pull request is the release. `.github/workflows/release.yml`
+runs on every push to `main` and asks `tools/release.sh --pending` whether
+the version in `install.sh` has a tag yet. When it has none, the suite runs on
+the merged commit, `version.py check` has to pass, and the script creates the
+tag and the GitHub release in one call:
 
 ```sh
-V=1.1.0
-python3 tools/version.py notes "$V" \
-  | gh release create "v$V" --verify-tag -t "reethink $V" -F -
+sh tools/release.sh --pending   true or false
+sh tools/release.sh --dry-run   the gh command it would run
 ```
 
-`notes` prints that version's section of the changelog and appends the compare
-link, so the release page says what a person gets rather than listing commit
-subjects. Nothing here parses commit messages, so they do not have to be
-`feat:` or `fix:` to make a readable release. `--verify-tag` refuses to invent
-a tag that was never pushed.
+The release body is what `version.py notes` prints: that version's section of
+the changelog with the compare link appended, so the release page says what a
+person gets rather than listing commit subjects. Nothing here parses commit
+messages, so they do not have to be `feat:` or `fix:` to make a readable
+release. A version with a hyphen, such as `1.2.0-rc.1`, is published as a
+prerelease. A push that did not change the version finds its tag already there
+and stops at the question, so merging ordinary work never releases anything.
+Do not push release tags by hand: a tag that already exists is read as
+"released", and the page would never be written.
 
 `check` runs inside the suite, and it does two jobs the list cannot. It sweeps
 every file in the package for a version string shaped like reethink's own that

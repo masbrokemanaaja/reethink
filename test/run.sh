@@ -1221,6 +1221,81 @@ else
   pass "a changelog naming a version the package does not hold fails the check"
 fi
 
+# --- a merged version bump releases itself, once --------------------------------
+# release.yml hands everything to tools/release.sh, so the script is what gets
+# proven: on a git copy of the package, with a gh that writes down what it was
+# asked instead of publishing. It has to publish a version with no tag, leave
+# a tagged one alone, refuse a package that disagrees with itself before gh is
+# ever called, and mark a hyphenated version as a prerelease.
+group "release"
+rel="$SANDBOX/release"
+relpkg="$rel/pkg"
+mkdir -p "$rel/bin" "$relpkg"
+(cd "$ROOT" && tar -cf - --exclude .git .) | (cd "$relpkg" && tar -xf -)
+cat > "$rel/bin/gh" <<'GH'
+#!/bin/sh
+printf '%s\n' "$@" > "$GH_LOG"
+while [ $# -gt 0 ]; do
+  if [ "$1" = "--notes-file" ]; then cp "$2" "$GH_LOG.notes"; fi
+  shift
+done
+GH
+chmod +x "$rel/bin/gh"
+git -C "$relpkg" init -q
+git -C "$relpkg" add -A
+git -C "$relpkg" -c user.name=suite -c user.email=suite@example.com commit -q -m base
+relv=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' "$relpkg/install.sh")
+rel_run() { env PATH="$rel/bin:$PATH" GH_LOG="$rel/gh.log" sh "$relpkg/tools/release.sh" "$@"; }
+
+check "true" "$(rel_run --pending)" "a version with no tag is pending"
+rm -f "$rel/gh.log" "$rel/gh.log.notes"
+rel_run >/dev/null 2>&1 || true
+if [ "$(sed -n 1,3p "$rel/gh.log" 2>/dev/null | tr '\n' ' ')" = "release create v$relv " ] \
+   && grep -qx -- "--target" "$rel/gh.log" \
+   && ! grep -qx -- "--prerelease" "$rel/gh.log" \
+   && python3 "$relpkg/tools/version.py" notes "$relv" | cmp -s - "$rel/gh.log.notes"; then
+  pass "an untagged version is published as v$relv with its changelog section as the body"
+else
+  fail "the release for v$relv was not asked for as expected: $(tr '\n' ' ' < "$rel/gh.log" 2>/dev/null)"
+fi
+
+git -C "$relpkg" tag "v$relv"
+rm -f "$rel/gh.log"
+check "false" "$(rel_run --pending)" "a tagged version is not pending"
+rel_run >/dev/null 2>&1 || true
+if [ -e "$rel/gh.log" ]; then
+  fail "an already tagged version was published a second time"
+else
+  pass "an already tagged version is left alone"
+fi
+
+sed 's/^VERSION=".*"/VERSION="3.0.0"/' "$relpkg/install.sh" > "$relpkg/install.sh.new"
+mv "$relpkg/install.sh.new" "$relpkg/install.sh"
+if rel_run >/dev/null 2>&1 || [ -e "$rel/gh.log" ]; then
+  fail "a package whose sites disagree with install.sh was released"
+else
+  pass "a package that disagrees with itself is refused before gh is called"
+fi
+git -C "$relpkg" checkout -q -- install.sh
+
+python3 - "$relpkg/CHANGELOG.md" <<'FIXTURE'
+import sys
+path = sys.argv[1]
+text = open(path, encoding="utf-8").read()
+head = "## [Unreleased]\n"
+at = text.index(head) + len(head)
+open(path, "w", encoding="utf-8").write(
+    text[:at] + "\n### Added\n\n- A line for the suite to release.\n" + text[at:])
+FIXTURE
+python3 "$relpkg/tools/version.py" set 1.2.0-rc.1 >/dev/null
+git -C "$relpkg" -c user.name=suite -c user.email=suite@example.com commit -qam bump
+rel_run >/dev/null 2>&1 || true
+if [ "$(sed -n 3p "$rel/gh.log" 2>/dev/null)" = "v1.2.0-rc.1" ] && grep -qx -- "--prerelease" "$rel/gh.log"; then
+  pass "a bump made with version.py set is published, and a hyphenated version as a prerelease"
+else
+  fail "the bumped prerelease was not asked for as expected: $(tr '\n' ' ' < "$rel/gh.log" 2>/dev/null)"
+fi
+
 # --- the author is named in every file this package ships ---------------------
 # Credit lives in LICENSE and the README, and it used to stop there: the shell
 # scripts, the hook and the routing block carried a repository URL and no name.
@@ -1230,7 +1305,7 @@ group "attribution"
 missing=""
 for f in install.sh uninstall.sh test/run.sh rules/routing.md LICENSE README.md \
          hooks/reethink_grounding.py hooks/wire_hook.py hooks/reethink-grounding.sh \
-         tools/version.py CHANGELOG.md; do
+         tools/version.py tools/release.sh CHANGELOG.md; do
   grep -q 'ree_es97' "$ROOT/$f" || missing="$missing $f"
 done
 for dir in "$ROOT"/skills/*/; do

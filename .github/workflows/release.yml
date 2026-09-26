@@ -1,0 +1,46 @@
+name: release
+
+# A release is the merge of a version bump. On every push to main this asks
+# tools/release.sh whether install.sh's version already has a tag; when it
+# does not, the suite runs on the merged commit and the tag and the release
+# page are created from the changelog. Every other push stops at the question.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Two merges in quick succession must not both try to publish the same tag.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The tags come with the full history, and the tag is how an
+          # already released version is recognised.
+          fetch-depth: 0
+
+      - name: Is this version released yet
+        id: pending
+        run: echo "release=$(sh tools/release.sh --pending)" >> "$GITHUB_OUTPUT"
+
+      - name: Test suite
+        if: steps.pending.outputs.release == 'true'
+        env:
+          NO_COLOR: "1"
+        run: sh test/run.sh
+
+      - name: Publish the release
+        if: steps.pending.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sh tools/release.sh

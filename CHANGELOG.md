@@ -8,11 +8,26 @@ versions follow [semantic versioning](https://semver.org/spec/v2.0.0.html).
 New work goes under `Unreleased` as it lands. `python3 tools/version.py set
 <version>` turns that section into a dated release, fixes the compare links,
 and moves the number in every other place it is written at the same time, so
-the changelog cannot claim a version the package does not hold.
+the changelog cannot claim a version the package does not hold. Merging that
+change into `main` publishes the release.
 
 ## [Unreleased]
 
 ### Added
+
+- Releases publish themselves. `.github/workflows/release.yml` runs on every
+  push to `main`, and `tools/release.sh` checks whether the version in
+  `install.sh` already has a tag. When it does not, the suite runs, `version.py
+  check` must pass, and the tag and the GitHub release are created in one
+  `gh release create`, with the changelog section as the body and a hyphenated
+  version marked as a prerelease. A push that leaves the version alone
+  releases nothing. Releasing is now `version.py set` in a pull request and a
+  merge; the manual tag and `gh release create` steps are gone. Five checks
+  prove it on a git copy with a recording `gh`: an untagged version is pending
+  and is published with exactly the notes `version.py notes` prints, a tagged
+  one is left alone, a package that disagrees with itself is refused before
+  `gh` is called, and a bump made with `version.py set 1.2.0-rc.1` is
+  published as a prerelease.
 
 - An eighth skill, `senior-designer`: a senior UI and UX designer for web and
   mobile that asks whether a color palette exists before the first design and
