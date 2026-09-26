@@ -392,7 +392,7 @@ shared=0
 for dir in "$ROOT"/skills/*/; do
   [ -f "$hs/.agents/skills/$(basename "$dir")/SKILL.md" ] && shared=$((shared + 1))
 done
-check "$skills_total" "$shared" "every skill lands in ~/.agents/skills"
+check "$skills_total" "$shared" "the seven skills land in ~/.agents/skills"
 if [ -e "$hs/.agents/AGENTS.md" ] || [ -e "$hs/.agents/none" ]; then
   fail "a target with no instruction file had one written anyway"
 else
@@ -426,325 +426,6 @@ if [ -f "$home2/.claude/skills/multi-file-probe/references/notes.md" ]; then
 else
   fail "a skill folder with extra files arrived as SKILL.md only"
 fi
-
-# --- the designer's two scripts do what the skill says they do -----------------
-# senior-designer quotes a count of valid directions, promises that a seed
-# reproduces a direction, that three directions sit six axes apart, and that
-# every palette it offers has already passed its contrast checks. Each of
-# those is a claim a reader acts on, so each is measured here rather than
-# trusted. The WCAG formula is written out again below instead of imported,
-# so a wrong formula in palette.py cannot grade its own homework.
-group "designer scripts"
-DESIGN="$ROOT/skills/senior-designer/scripts"
-# No bytecode: install.sh copies a skill folder whole, so a __pycache__ left
-# here by the suite would be installed into somebody's agent.
-designer_check() {
-  if dout=$(PYTHONDONTWRITEBYTECODE=1 python3 - "$DESIGN" "$ROOT" 2>&1); then
-    pass "$1"
-  else
-    fail "$1: $dout"
-  fi
-}
-
-designer_check "the direction count in SKILL.md and both READMEs is the one the script computes" <<'PY'
-import os, subprocess, sys
-scripts, root = sys.argv[1], sys.argv[2]
-sys.path.insert(0, scripts)
-import direction
-web, mobile = direction.count_valid("web"), direction.count_valid("mobile")
-skill = open(os.path.join(root, "skills/senior-designer/SKILL.md"), encoding="utf-8").read()
-en = open(os.path.join(root, "README.md"), encoding="utf-8").read()
-idn = open(os.path.join(root, "README-ID.md"), encoding="utf-8").read()
-want = [(skill, f"{web:,}", "SKILL.md web"), (skill, f"{mobile:,}", "SKILL.md mobile"),
-        (en, f"{web:,}", "README.md"), (idn, f"{web:,}".replace(",", "."), "README-ID.md")]
-missing = [label for text, number, label in want if number not in text]
-if missing:
-    sys.exit(f"{', '.join(missing)} do not quote {web:,} (web) and {mobile:,} (mobile)")
-PY
-
-designer_check "the inclusion-exclusion count agrees with brute force on the real rules" <<'PY'
-import itertools, sys
-sys.path.insert(0, sys.argv[1])
-import direction
-# Every option a rule names, plus one it does not, keeps the brute force small
-# enough to run here while still exercising every rule. The full space was
-# brute-forced once, in 30.8s, and agreed with the formula to the unit.
-named = {}
-for pairs, _ in direction.RULES + direction.SURFACE_RULES["mobile"]:
-    for axis, option in pairs:
-        named.setdefault(axis, set()).add(option)
-small = {}
-for axis, options in direction.AXES.items():
-    keep = set(named.get(axis, ()))
-    keep.add(next(o for o in sorted(options) if o not in keep))
-    small[axis] = {o: options[o] for o in sorted(keep)}
-for surface in ("web", "mobile"):
-    brute = 0
-    for combo in itertools.product(*(sorted(o) for o in small.values())):
-        if direction.broken_rule(dict(zip(small, combo)), surface) is None:
-            brute += 1
-    formula = direction.count_valid(surface, small)
-    if brute != formula:
-        sys.exit(f"{surface}: brute force {brute}, formula {formula}")
-PY
-
-designer_check "a direction seed reproduces the same direction, fonts and all" <<'PY'
-import json, subprocess, sys
-script = sys.argv[1] + "/direction.py"
-run = lambda *a: subprocess.run([sys.executable, script, *a], capture_output=True, text=True, check=True).stdout
-if run("show", "48213", "--json") != run("show", "48213", "--json"):
-    sys.exit("show 48213 gave two different answers")
-if run("roll", "--seed", "5", "--json") != run("roll", "--seed", "5", "--json"):
-    sys.exit("roll --seed 5 gave two different answers")
-one = json.loads(run("roll", "--seed", "5", "--json"))[0]
-if json.loads(run("show", str(one["seed"]), "--json")) != one:
-    sys.exit("a rolled direction and show of its seed differ")
-PY
-
-designer_check "three rolled directions sit six axes apart and break no rule" <<'PY'
-import sys
-sys.path.insert(0, sys.argv[1])
-import direction
-# Written out here rather than read from RULES, so a rule dropped from the
-# script is caught instead of agreed with.
-never = [({"composition": "index", "density": "airy"}, "web"),
-         ({"composition": "poster", "density": "dense"}, "web"),
-         ({"type": "single-face", "hierarchy": "weight"}, "web"),
-         ({"icons": "none"}, "mobile")]
-for surface in ("web", "mobile"):
-    for master in range(60):
-        found = direction.roll(3, surface, master)
-        if len(found) != 3:
-            sys.exit(f"{surface} master {master}: {len(found)} directions")
-        for i, a in enumerate(found):
-            for b in found[i + 1:]:
-                if direction.distance(a, b) < 6:
-                    sys.exit(f"{surface} master {master}: seeds {a['seed']} and {b['seed']} are too close")
-            for combo, where in never:
-                applies = where == "web" or where == surface
-                if applies and all(a["axes"][k] == v for k, v in combo.items()):
-                    sys.exit(f"{surface} seed {a['seed']} rolled {combo}")
-PY
-
-designer_check "--avoid keeps a new direction six axes from the one already used" <<'PY'
-import sys
-sys.path.insert(0, sys.argv[1])
-import direction
-used = direction.build(48213, "web")
-for master in range(40):
-    new = direction.roll(1, "web", master, avoid=[48213])[0]
-    if direction.distance(new, used) < 6:
-        sys.exit(f"master {master}: seed {new['seed']} is {direction.distance(new, used)} axes from 48213")
-PY
-
-designer_check "no overused default font is ever picked" <<'PY'
-import sys
-sys.path.insert(0, sys.argv[1])
-import direction
-banned = {"Inter", "Roboto", "Poppins", "Montserrat", "Open Sans", "Lato",
-          "Space Grotesk", "Playfair Display", "Oswald", "Bebas Neue"}
-pooled = {f for display, text in direction.FONTS.values() for f in display + (text or ())}
-if pooled & banned:
-    sys.exit(f"pooled anyway: {sorted(pooled & banned)}")
-if set(direction.FONTS) != set(direction.AXES["type"]):
-    sys.exit("a type strategy has no font pool, or a pool has no strategy")
-PY
-
-designer_check "palette.py measures contrast and OKLCH the way WCAG and Oklab define them" <<'PY'
-import subprocess, sys
-sys.path.insert(0, sys.argv[1])
-import palette
-run = lambda *a: subprocess.run([sys.executable, sys.argv[1] + "/palette.py", *a],
-                                capture_output=True, text=True, check=True).stdout.split()[0]
-# 4.54 is the ratio usually quoted for #767676 on white; #777777 is 4.478,
-# which has to show as 4.47 because rounding it to 4.48 would still pass and
-# rounding a 4.499 to 4.50 would not be allowed to.
-got = (run("contrast", "#767676", "#FFFFFF"), run("contrast", "#777777", "#FFFFFF"),
-       run("contrast", "#000", "#fff"))
-if got != ("4.54", "4.47", "21.00"):
-    sys.exit(f"contrast gave {got}")
-L, C, h = palette.hex_to_oklch("#FF0000")
-if (round(L, 3), round(C, 3), round(h, 1)) != (0.628, 0.258, 29.2):
-    sys.exit(f"#FF0000 is oklch({L:.4f} {C:.4f} {h:.2f}), expected 0.628 0.258 29.2")
-for hx in ("#1B1B1B", "#F4EFE6", "#C8553D", "#0B7A75", "#FFFFFF"):
-    if palette.oklch_to_hex(*palette.hex_to_oklch(hx)) != hx:
-        sys.exit(f"{hx} does not survive a round trip through OKLCH")
-PY
-
-designer_check "every suggested palette passes the ratios it prints, measured independently" <<'PY'
-import sys
-sys.path.insert(0, sys.argv[1])
-import palette
-
-def lin(c):
-    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
-
-def ratio(a, b):
-    lum = lambda h: sum(w * lin(int(h[i:i + 2], 16) / 255) for w, i in ((0.2126, 1), (0.7152, 3), (0.0722, 5)))
-    x, y = sorted((lum(a), lum(b)), reverse=True)
-    return (x + 0.05) / (y + 0.05)
-
-need = {("ink", "paper"): 7.0, ("ink", "surface"): 4.5, ("muted", "paper"): 4.5,
-        ("accent-text", "paper"): 4.5, ("on-accent", "accent"): 4.5,
-        ("accent", "paper"): 3.0, ("control-border", "paper"): 3.0,
-        ("accent-2", "paper"): 3.0}
-for mode in ("light", "dark"):
-    for master in range(15):
-        found = palette.suggest(3, mode, master)
-        if len(found) != 3:
-            sys.exit(f"{mode} master {master}: {len(found)} palettes")
-        hues = []
-        for p in found:
-            r = p["roles"]
-            for (fg, bg), n in need.items():
-                if fg in r and ratio(r[fg], r[bg]) < n:
-                    sys.exit(f"{mode} seed {p['seed']}: {fg} on {bg} is {ratio(r[fg], r[bg]):.3f}, needs {n}")
-            base = float(p["base"].split("(")[1].rstrip(")"))
-            if 268 <= base <= 312:
-                sys.exit(f"{mode} seed {p['seed']}: base hue {base} is in the indigo to violet band")
-            hues.append(base)
-        for i, a in enumerate(hues):
-            for b in hues[i + 1:]:
-                if min(abs(a - b) % 360, 360 - abs(a - b) % 360) < 60:
-                    sys.exit(f"{mode} master {master}: base hues {a:.0f} and {b:.0f} are too close")
-brand = palette.suggest(3, "light", 1, brand="#C8553D")
-if not brand or any(p["roles"]["accent"] != "#C8553D" for p in brand):
-    sys.exit("--brand did not keep the brand color exactly")
-PY
-
-designer_check "tokens.py writes the chosen seeds down and emits tokens that remove the defaults" <<'PY'
-import json, os, subprocess, sys, tempfile
-scripts = sys.argv[1]
-run = lambda *a: subprocess.run([sys.executable, os.path.join(scripts, "tokens.py"), *a],
-                                capture_output=True, text=True, check=True).stdout
-with tempfile.TemporaryDirectory() as tmp:
-    spec_path = os.path.join(tmp, "design-direction.json")
-    run("spec", "--direction", "822532", "--palette", "914858", "--mode", "dark",
-        "--brand", "#22d3ee", "--scheme", "triadic", "--out", spec_path)
-    spec = json.load(open(spec_path))
-    if (spec["fonts"]["display"], spec["fonts"]["text"], spec["fonts"]["source"]) != (
-            "Fragment Mono", "Red Hat Text", "rolled"):
-        sys.exit(f"spec recorded fonts {spec['fonts']}")
-    if spec["palette"]["roles"]["accent"] != "#22D3EE" or len(spec["palette"]["roles"]) != 10:
-        sys.exit(f"spec recorded roles {spec['palette']['roles']}")
-    block = run("emit", spec_path)
-    for want in ["--color-*: initial;", "--font-*: initial;", "--radius-container: 20px;",
-                 '--font-display: "Fragment Mono", ui-monospace'] + [
-                 f"--color-{r}: {h};" for r, h in spec["palette"]["roles"].items()]:
-        if want not in block:
-            sys.exit(f"the Tailwind block lacks {want}")
-    run("spec", "--direction", "822532", "--palette", "914858", "--mode", "dark",
-        "--brand", "#22d3ee", "--scheme", "triadic", "--brand-fonts", "Space Grotesk,Inter",
-        "--out", spec_path)
-    if json.load(open(spec_path))["fonts"]["source"] != "brand":
-        sys.exit("--brand-fonts did not record the fonts as the brand's")
-PY
-
-designer_check "verify.py passes code and copy that follow the spec, and names each planted tell" <<'PY'
-import json, os, subprocess, sys, tempfile
-scripts = sys.argv[1]
-py = lambda name, *a: subprocess.run([sys.executable, os.path.join(scripts, name), *a],
-                                     capture_output=True, text=True)
-with tempfile.TemporaryDirectory() as tmp:
-    spec = os.path.join(tmp, "design-direction.json")
-    py("tokens.py", "spec", "--direction", "822532", "--palette", "914858", "--mode", "dark",
-       "--brand", "#22d3ee", "--scheme", "triadic", "--out", spec)
-    tree = {n: os.path.join(tmp, n) for n in ("clean", "clean-site", "dirty", "dirty-site")}
-    for d in tree.values():
-        os.makedirs(os.path.join(d, "projects"))
-    write = lambda d, name, text: open(os.path.join(tree[d], name), "w").write(text)
-    write("clean", "global.css", '@import "tailwindcss";\n' + py("tokens.py", "emit", spec).stdout + "\n")
-    write("clean", "Hero.tsx",
-          '<a href="#add" className="bg-paper text-ink font-display rounded-container '
-          'border border-rule">x</a>\n'
-          '<span className="rounded-full bg-accent text-on-accent" style={{boxShadow: '
-          '"0 8px 24px rgba(0,0,0,0.4)"}} />\n')
-    write("clean-site", "index.html",
-          '<html><head><link rel="stylesheet" href="/projects/site.css"></head><body>'
-          '<h1>Rama</h1><p>3+ <span>years</span> of shipping</p>'
-          '<a href="/projects/">projects</a></body></html>\n')
-    write("clean-site", "projects/index.html", "<p>GEMS</p>\n")
-    write("clean-site", "projects/site.css", "")
-    claims = os.path.join(tmp, "design-claims.json")
-    json.dump({"claims": [{"text": "3+ years", "source": "user, this conversation"}]}, open(claims, "w"))
-    out = py("verify.py", spec, tree["clean"], "--site", tree["clean-site"], "--claims", claims)
-    if out.returncode != 0:
-        sys.exit("clean fixture failed:\n" + out.stdout)
-    # One line per check, each copied from what a real redesign shipped.
-    write("dirty", "global.css", "@theme {\n  --font-sans: 'Inter', system-ui, sans-serif;\n}\n")
-    write("dirty", "Page.tsx", "\n".join([
-        '<p className="text-cyan-400">a</p>',
-        '<div className="bg-[#131619]">b</div>',
-        '<button className="shadow-[0_0_20px_rgba(34,211,238,0.25)]">c</button>',
-        '<h1 className="bg-clip-text">d</h1>',
-        '<nav className="backdrop-blur-md">e</nav>',
-        '<div className="rounded-xl">f</div>',
-        '<div style={{backgroundImage: "url(https://grainy-gradients.vercel.app/noise.svg)"}} />',
-    ]) + "\n")
-    write("dirty-site", "index.html",
-          "<p>100%</p><div>AUDIT TOKEN</div><p>[2021 - 2024] Freelance</p>"
-          '<a href="/about/">about</a><footer>[SPEC: DIR-822532 // PAL-914858 // WCAG-2.2-AA]</footer>\n')
-    out = py("verify.py", spec, tree["dirty"], "--site", tree["dirty-site"], "--json")
-    report = json.loads(out.stdout)
-    failed = {c["name"] for c in report["checks"] if c["count"] and c["level"] == "fail"}
-    warned = {c["name"] for c in report["checks"] if c["count"] and c["level"] == "warn"}
-    want = {"fonts", "overused fonts", "palette", "default colors", "glow", "gradient text",
-            "glass", "radius", "claims", "links", "process leak"}
-    if out.returncode != 1 or failed != want or warned != {"hotlinks", "process words"}:
-        sys.exit(f"exit {out.returncode}, failed {sorted(failed)}, warned {sorted(warned)}")
-    # And each planted fact is named on its own, so losing one pattern cannot
-    # hide behind another that still fails the same check.
-    hits = {c["name"]: " | ".join(h["text"] for h in c["hits"]) for c in report["checks"]}
-    for check, needle in [("claims", "100%"), ("claims", "2021 - 2024"), ("links", "/about/"),
-                          ("process leak", "822532"), ("process leak", "914858")]:
-        if needle not in hits[check]:
-            sys.exit(f"{check} did not name {needle}: {hits[check]}")
-    # Without the build the words were never read, which is not a pass.
-    out = py("verify.py", spec, tree["clean"], "--json")
-    names = {c["name"] for c in json.loads(out.stdout)["checks"] if c["count"]}
-    if out.returncode != 1 or names != {"claims"}:
-        sys.exit(f"without --site: exit {out.returncode}, failing {sorted(names)}")
-    json.dump({"claims": [{"text": "3+ years", "source": ""}]}, open(claims, "w"))
-    out = py("verify.py", spec, tree["clean"], "--site", tree["clean-site"], "--claims", claims)
-    if out.returncode != 1 or "no source given" not in out.stdout:
-        sys.exit("a claim with no source passed")
-PY
-
-designer_check "verify.py --links fails a dead link, and only warns on a site that refuses scripts" <<'PY'
-import http.server, json, os, subprocess, sys, tempfile, threading
-scripts = sys.argv[1]
-
-class Handler(http.server.BaseHTTPRequestHandler):
-    CODES = {"/ok": 200, "/gone": 404, "/refused": 999}
-    def _answer(self):
-        self.send_response(self.CODES.get(self.path, 404))
-        self.end_headers()
-    do_HEAD = do_GET = _answer
-    def log_message(self, *a):
-        pass
-
-server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
-threading.Thread(target=server.serve_forever, daemon=True).start()
-base = f"http://127.0.0.1:{server.server_port}"
-try:
-    with tempfile.TemporaryDirectory() as tmp:
-        spec = os.path.join(tmp, "design-direction.json")
-        subprocess.run([sys.executable, os.path.join(scripts, "tokens.py"), "spec", "--direction", "822532",
-                        "--palette", "914858", "--mode", "dark", "--brand", "#22d3ee", "--scheme",
-                        "triadic", "--out", spec], check=True, capture_output=True)
-        src, site = os.path.join(tmp, "src"), os.path.join(tmp, "site")
-        os.makedirs(src); os.makedirs(site)
-        open(os.path.join(site, "index.html"), "w").write(
-            f'<a href="{base}/ok">ok</a><a href="{base}/refused">in</a>'
-            f'<code>curl -sL {base}/gone</code>\n')
-        out = subprocess.run([sys.executable, os.path.join(scripts, "verify.py"), spec, src,
-                              "--site", site, "--links", "--json"], capture_output=True, text=True)
-        checks = {c["name"]: [h["text"] for h in c["hits"]] for c in json.loads(out.stdout)["checks"]}
-        if checks["links"] != [f"404: {base}/gone"] or checks["links refused"] != [f"999: {base}/refused"]:
-            sys.exit(f"links {checks['links']}, refused {checks['links refused']}")
-finally:
-    server.shutdown()
-PY
 
 # --- piped from curl, the cwd is not the source ------------------------------
 # Read from stdin, $0 is "sh" and dirname "sh" is ".", so a stray skills/ in
@@ -1130,7 +811,7 @@ fi
 grep -v "reethink $vstray" "$vcopy/SECURITY.md" > "$vcopy/SECURITY.new"
 mv "$vcopy/SECURITY.new" "$vcopy/SECURITY.md"
 
-# And the bump has to reach every site, not the twelve that are easy to find.
+# And the bump has to reach all fifteen, not the twelve that are easy to find.
 # The copy gets its own Unreleased entry first. Reusing whatever the working
 # tree happens to hold made this depend on where in the release cycle it was
 # run: straight after a release Unreleased is empty, the bump refused, and
@@ -1359,24 +1040,21 @@ word_at("README-ID.md", r"berupa (\w+) folder di bawah direktori skill agent",
 
 # And the split has to add up to the total, not to the total it used to be.
 codex = open(os.path.join(root, ".codex-plugin/plugin.json"), encoding="utf-8").read()
-# The designer is its own group: it decides neither what is true nor how the
-# answer reads, so the split has three parts and all three are counted.
 truth = re.search(r"\b(\w+) skills decide what is true", codex, re.I)
-look = re.search(r"\b(\w+) decides? how it looks", codex, re.I)
 rest = re.search(r"\b(\w+) more decide what survives", codex, re.I)
-if not truth or not look or not rest:
+if not truth or not rest:
     problems.append(".codex-plugin/plugin.json: the longDescription no longer "
                     "splits the skills the way this check reads it")
 else:
-    words = [m.group(1).lower() for m in (truth, look, rest)]
     try:
-        total = sum(EN.index(w) for w in words)
+        total = EN.index(truth.group(1).lower()) + EN.index(rest.group(1).lower())
     except ValueError:
         total = -1
     if total != n:
         problems.append(
             f".codex-plugin/plugin.json: longDescription splits the skills "
-            f"{' plus '.join(words)}, which is {total}, not {n}")
+            f"{truth.group(1).lower()} plus {rest.group(1).lower()}, which is "
+            f"{total}, not {n}")
 
 for p in problems:
     print(f"  {R}FAIL{O}", p)

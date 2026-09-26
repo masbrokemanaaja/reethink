@@ -2,7 +2,7 @@
 
 **English** · [Bahasa Indonesia](README-ID.md)
 
-Eight skills that make an AI coding agent check before it answers and say what
+Seven skills that make an AI coding agent check before it answers and say what
 it found in a way a human can act on, plus the hook that turns them on without
 being asked.
 
@@ -10,7 +10,7 @@ being asked.
 curl -fsSL https://raw.githubusercontent.com/masbrokemanaaja/reethink/main/install.sh | sh
 ```
 
-![sh install.sh writing eight skill folders, a rules block and a hook entry for Claude Code](assets/install.svg)
+![sh install.sh writing seven skill folders, a rules block and a hook entry for Claude Code](assets/install.svg)
 
 The installer finds the agents already on your machine, copies the skills where
 each one looks for them, adds a routing block to its instruction file, and
@@ -74,8 +74,8 @@ None of these is a knowledge problem. The model can find all of it. They are
 Each is a folder with a `SKILL.md` in the [Agent Skills open
 standard](https://agentskills.io) format, so they load in any compatible tool.
 
-Five of them decide what is true. One decides how a design looks and works.
-Two decide what survives the trip to the person reading. The second pair matters more than it looks: an agent that
+Five of them decide what is true. Two decide what survives the trip to the
+person reading. The second pair matters more than it looks: an agent that
 measures carefully and then reports "it works now" has thrown the measurement
 away at the last step.
 
@@ -146,48 +146,6 @@ option was found and why it was or was not taken, because the boring solution
 winning is also an answer. Guardrails keep the creativity in the framing and
 out of the security, error handling, naming and style.
 
-### Deciding how it looks
-
-This one decides neither what is true nor how the answer reads. It decides what
-a screen looks like and how a person gets through it, and it is the only skill
-here that governs a deliverable rather than a reply.
-
-#### `senior-designer`
-
-A senior UI and UX designer, web and mobile, that will not ship the average.
-
-AI slop is the design version of answering from memory: ask a model for a
-landing page and it draws the middle of every landing page it has seen, a
-centered hero with gradient text, three icon cards, Inter. The skill splits the
-work in two. Function comes from the brief and the craft: information
-architecture, navigation, platform conventions and a WCAG 2.2 AA floor are
-decided, never left to chance. Expression is rolled by `scripts/direction.py`
-from ten axes (composition, type, color strategy, shape, depth, hierarchy,
-density, imagery, icons and a signature element), with pairs that fight
-excluded by rule and the spacing, type scale and motion derived from what was
-rolled. That leaves 53,871,360 valid directions for the web and 44,892,800 for
-mobile before fonts and palettes are counted, offered three at a time and six
-axes apart, each seed reproducible and avoidable next time. Before the first
-design it asks whether a palette exists; if not, `scripts/palette.py` offers
-three whose WCAG ratios were measured before they were shown, and a brand color
-that fails is reported, never quietly changed. The choice is then written to
-`design-direction.json`, `scripts/tokens.py` generates the Tailwind `@theme` or
-CSS variables from it (the Tailwind block switches the framework's default
-colors off), and `scripts/verify.py` checks the source against the file before
-the work may be called done: fonts, every color literal, framework color
-classes, glows, gradient text, backdrop blur and corner radii. That last step
-exists because of a real redesign where the agent announced a rolled direction
-and shipped its defaults anyway; against its own spec, that code passes 0 of
-the 8 checks. Given `--site`, the verifier also reads the built page's words:
-every percentage, "3+", year range or counted noun must be listed in
-`design-claims.json` with its source, every link must resolve (absolute URLs
-too with `--links`), and the spec's own seeds must not appear in the copy. The
-second run of the same redesign passed every visual check and failed these:
-five unsourced numbers, a copyable `curl` command whose URL answered 404, and
-the seeds printed in its footer. The count, the reproducibility, the distance, every printed
-ratio and both new scripts are checked by the test suite, the ratios against a
-second copy of the WCAG formula.
-
 ### Deciding what reaches the reader
 
 These two apply to every reply rather than waiting for a trigger, and both stop
@@ -232,7 +190,7 @@ injects a short reminder: the local time is already in the message metadata so
 do not spend a command on `date`, treat memory as a floor, check the installed
 version before stating any API, load the grounding skills when they
 apply, and keep every reply dense and plainly written. One injection per turn,
-about 1,671 characters, nothing after that.
+about 1,557 characters, nothing after that.
 
 ```
 Claude Code   UserPromptSubmit  ->  hookSpecificOutput.additionalContext
@@ -383,7 +341,7 @@ On **Codex** it carries the skills alone. `codex features list` reports
 its manifest says.
 
 Running both roads for one agent is the thing to avoid. Two copies of every
-skill, and on Claude Code two hooks firing, which means the same 1,671
+skill, and on Claude Code two hooks firing, which means the same 1,557
 characters injected twice per turn. Pick one per agent.
 
 The manifests are `.claude-plugin/plugin.json` and its `marketplace.json`,
@@ -424,8 +382,8 @@ The ref has to exist in the repository. `main` is the moving target and
 
 Every change is marked and reversible.
 
-**Skills** are eight folders under the agent's skills directory. Uninstall
-removes those eight folders and nothing beside them.
+**Skills** are seven folders under the agent's skills directory. Uninstall
+removes those seven folders and nothing beside them.
 
 **Rules** go into the agent's instruction file between two markers:
 
@@ -474,10 +432,10 @@ project set out to find.
 
 | | |
 | --- | --- |
-| Loaded at startup, eight names and descriptions | 5,993 characters |
-| The routing block, in the instruction file | 2,315 characters |
-| The hook injection, once per turn | 1,671 characters |
-| Fixed per turn | 3,986 characters |
+| Loaded at startup, seven names and descriptions | 5,109 characters |
+| The routing block, in the instruction file | 2,060 characters |
+| The hook injection, once per turn | 1,557 characters |
+| Fixed per turn | 3,617 characters |
 | One hook run | 25 ms, from ten runs in 247 ms |
 | Hook failures | 0 in 205 logged calls, 67 of them injections |
 
@@ -547,24 +505,21 @@ sh test/run.sh
 ```
 
 The suite installs into a temporary `HOME`, so it never touches your real
-configuration. It runs 106 checks: the skills validate against the spec and are
+configuration. It runs 95 checks: the skills validate against the spec and are
 all named in the routing block and the hook message, the hook script answers
 both host contracts and survives malformed input, the rules block is idempotent
 and leaves the user's own text where and as it was written, a damaged marker
 pair is refused rather than acted on, an unknown `--agent` name fails loudly,
-the version number reads the same in all sixteen places it is written and the
+the version number reads the same in all fifteen places it is written and the
 changelog names the version the package actually holds, every count written out
-in words matches what is on disk, the designer's direction count, seeds and
-palette ratios are recomputed rather than trusted and its verifier passes
-compliant code and copy and fails every planted tell by name, dead links
-included, and an install followed by
-an uninstall gives the files back byte for byte.
+in words matches what is on disk, and an install followed by an uninstall gives
+the files back byte for byte.
 
-## Why these eight, and not more
+## Why these seven, and not more
 
 Every skill in the list is paid for on every turn: an agent loads each skill's
 name and description at startup to decide what is relevant. A large library of
-overlapping skills makes that decision worse, not better. These eight divide
+overlapping skills makes that decision worse, not better. These seven divide
 cleanly along one question each:
 
 - **grounded-research**: is this true?
@@ -572,22 +527,18 @@ cleanly along one question each:
 - **modular-code-guard**: is the code going to stay workable?
 - **security-assessment**: can untrusted input reach something that matters?
 - **senior-engineer**: is this the right thing to build?
-- **senior-designer**: does it look designed, or like the average of everything?
 - **concise-answers**: did the answer survive being written down?
 - **plain-technical**: can the person reading it act on it?
 
-A ninth would have to answer a question none of these does. The last two
-earned their places that way. `security-assessment`: none of the others asks
-where untrusted input goes, and the two failures it targets are opposite ones,
-writing a weaponised payload and refusing to look at suspicious code at all.
-`senior-designer`: none of the others looks at a screen, and the failure it
-targets is the one the grounding skills fight in prose, output drawn from the
-average of the training data instead of from the case in front of it.
+An eighth would have to answer a question none of these does. The seventh
+earned its place the same way: none of the other six asks where untrusted
+input goes, and the two failures it targets are opposite ones, writing a
+weaponised payload and refusing to look at suspicious code at all.
 
 That is the whole difference from the collections. The large ones are large on
 purpose: catalogues of 380, 1,000, even 2,115 skills, sorted by domain. They
-are useful when you know the name of the thing you want. This is not that. Eight
-skills cost 5,993 characters of context at startup, measured; a thousand
+are useful when you know the name of the thing you want. This is not that. Seven
+skills cost 5,109 characters of context at startup, measured; a thousand
 descriptions cost that many times over in every session, and they crowd the
 one decision the agent has to make each turn, which is whether any of them is
 relevant right now.

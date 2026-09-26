@@ -1,7 +1,7 @@
 {
   "name": "reethink",
   "version": "1.1.0",
-  "description": "Eight skills that make an AI coding agent check before it answers and say what it found in a way a person can act on.",
+  "description": "Seven skills that make an AI coding agent check before it answers and say what it found in a way a person can act on.",
   "author": {
     "name": "ree_es97"
   },
@@ -13,7 +13,7 @@
   "interface": {
     "displayName": "reethink",
     "shortDescription": "Check before you answer, and say what you found.",
-    "longDescription": "Five skills decide what is true: check the source, check whether it is still true, keep the code workable, ask where untrusted input goes, and judge what is worth building. One decides how it looks and works: a senior designer that asks for the palette first and will not ship the template everyone else ships. Two more decide what survives the trip to the reader: the answer first with every measured number kept, and plain writing that keeps the real names and identifiers. Measured against a baseline, it did not make answers more often right; it made them checkable.",
+    "longDescription": "Five skills decide what is true: check the source, check whether it is still true, keep the code workable, ask where untrusted input goes, and judge what is worth building. Two more decide what survives the trip to the reader: the answer first with every measured number kept, and plain writing that keeps the real names and identifiers. Measured against a baseline, it did not make answers more often right; it made them checkable.",
     "developerName": "ree_es97",
     "category": "Productivity",
     "capabilities": [],

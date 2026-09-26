@@ -29,12 +29,8 @@ These skills are not optional and do not need to be asked for by name.
 - **security-assessment** whenever reviewing security, assessing
   vulnerabilities, writing Semgrep rules, inspecting untrusted input flows,
   or performing white-box security audits.
-- **senior-engineer** for any non-trivial software design, build, refactor
-  or tech choice.
-- **senior-designer** for any UI, UX or visual design: a page, a screen, a
-  component, a logo, icons or a palette. Ask whether a color palette exists
-  before the first design, and roll the direction rather than reaching for
-  the default look.
+- **senior-engineer** for any non-trivial design, build, refactor or tech
+  choice.
 
 Not knowing is the signal to look it up, never the signal to stop or to hand
 the question back. Exhausting the search and reporting the gap is a finished

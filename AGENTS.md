@@ -37,22 +37,14 @@ version, then the project's own documentation" beats "be careful about
 versions".
 
 If you add a skill, it has to earn a place next to the others without
-overlapping them. Eight skills that divide cleanly beat twelve that compete for
-the same trigger. Five of the current eight decide what is true; one,
-`senior-designer`, decides how a design looks and works and governs that
-deliverable; two decide how the answer reaches the reader, and those two stop at
-the conversation: they never govern the code, the documentation or the commit
-messages.
-
-A skill may ship a `scripts/` folder beside its `SKILL.md`, and the house rules
-above apply to it: Python standard library only, and any number the skill quotes
-from its script, such as the direction count in `senior-designer`, is read back
-by the suite rather than trusted.
+overlapping them. Seven skills that divide cleanly beat ten that compete for the
+same trigger. Five of the current seven decide what is true; two decide how the
+answer reaches the reader, and those two stop at the conversation: they never
+govern the code, the documentation or the commit messages.
 
 ## Releasing a version
 
-The number is written in sixteen places across fifteen files, one more with
-every skill added: `install.sh`,
+The number is written in fifteen places across fourteen files: `install.sh`,
 the pinning example in its own comment, four plugin manifests, the frontmatter
 of every skill, and the banner drawn inside `assets/install.svg` and
 `assets/uninstall.svg`. Nobody greps an SVG at release time, which is the whole
@@ -72,7 +64,7 @@ python3 tools/version.py set 1.1.0 the release itself, in one pass
 
 `set` does four things and stops at the first that will not work. It turns
 `Unreleased` into `## [1.1.0] - <today>`, chains the compare links at the
-bottom onto the previous tag, rewrites every site, and refuses outright
+bottom onto the previous tag, rewrites all fifteen sites, and refuses outright
 when nothing is written under `Unreleased`, before a single file has been
 touched. It replaces only the matched digits, so JSON keeps its formatting and
 the SVGs keep their markup. Then `sh test/run.sh`, commit, and

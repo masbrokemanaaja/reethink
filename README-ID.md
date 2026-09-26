@@ -2,7 +2,7 @@
 
 [English](README.md) · **Bahasa Indonesia**
 
-Delapan skill yang membuat AI coding agent memeriksa dulu sebelum menjawab, lalu
+Tujuh skill yang membuat AI coding agent memeriksa dulu sebelum menjawab, lalu
 menyampaikan temuannya dengan cara yang bisa ditindaklanjuti manusia, plus
 hook yang menyalakannya tanpa perlu diminta.
 
@@ -10,7 +10,7 @@ hook yang menyalakannya tanpa perlu diminta.
 curl -fsSL https://raw.githubusercontent.com/masbrokemanaaja/reethink/main/install.sh | sh
 ```
 
-![sh install.sh menulis delapan folder skill, blok rules, dan entry hook untuk Claude Code](assets/install.svg)
+![sh install.sh menulis tujuh folder skill, blok rules, dan entry hook untuk Claude Code](assets/install.svg)
 
 Installer mencari agent yang sudah ada di mesin Anda, menyalin skill ke tempat
 yang dibaca masing-masing, menambahkan blok routing ke file instruksinya, dan
@@ -78,8 +78,8 @@ Masing-masing berupa folder berisi `SKILL.md` dalam format [Agent Skills open
 standard](https://agentskills.io), jadi bisa dimuat tool mana pun yang
 kompatibel.
 
-Lima menentukan apa yang benar. Satu menentukan bagaimana sebuah desain
-terlihat dan dipakai. Dua menentukan apa yang selamat sampai ke pembaca. Pasangan kedua lebih penting dari kelihatannya: agent yang mengukur
+Lima menentukan apa yang benar. Dua menentukan apa yang selamat sampai ke
+pembaca. Pasangan kedua lebih penting dari kelihatannya: agent yang mengukur
 dengan teliti lalu melaporkan "sekarang sudah jalan" telah membuang
 pengukurannya di langkah terakhir.
 
@@ -152,50 +152,6 @@ solusi membosankan yang menang juga sebuah jawaban. Pagar pengamannya menjaga
 kreativitas tetap di perumusan masalah dan jauh dari keamanan, penanganan
 error, penamaan, dan gaya penulisan.
 
-### Menentukan bagaimana tampilannya
-
-Yang satu ini tidak menentukan apa yang benar atau bagaimana jawaban dibaca. Ia
-menentukan seperti apa sebuah layar terlihat dan bagaimana orang melewatinya,
-dan ia satu-satunya skill di sini yang mengatur hasil kerja, bukan balasan.
-
-#### `senior-designer`
-
-Desainer UI dan UX senior, web dan mobile, yang menolak mengirim desain
-rata-rata.
-
-AI slop adalah versi desain dari menjawab berdasarkan ingatan: minta landing
-page ke sebuah model dan ia menggambar titik tengah semua landing page yang
-pernah dilihatnya, hero di tengah dengan teks gradien, tiga kartu ikon, Inter.
-Skill ini membagi pekerjaannya menjadi dua. Fungsi datang dari brief dan
-ilmunya: arsitektur informasi, navigasi, konvensi platform, dan lantai WCAG 2.2
-AA ditetapkan, tidak pernah diserahkan ke kebetulan. Ekspresi diundi oleh
-`scripts/direction.py` dari sepuluh sumbu (komposisi, tipe, strategi warna,
-bentuk, kedalaman, hierarki, kepadatan, citra, ikon, dan satu elemen khas),
-pasangan yang saling bertabrakan dikeluarkan lewat aturan, dan skala spasi,
-skala tipe, serta motion diturunkan dari hasil undian. Hasilnya 53.871.360 arah
-yang valid untuk web dan 44.892.800 untuk mobile sebelum font dan palet
-dihitung, ditawarkan tiga sekaligus dengan jarak enam sumbu, dan setiap seed
-bisa diulang atau dihindari lain kali. Sebelum desain pertama ia bertanya
-apakah palet warna sudah ada; kalau belum, `scripts/palette.py` menawarkan tiga
-yang rasio WCAG-nya sudah diukur sebelum ditampilkan, dan warna brand yang
-gagal dilaporkan, tidak diubah diam-diam. Pilihan itu lalu ditulis ke
-`design-direction.json`, `scripts/tokens.py` menghasilkan `@theme` Tailwind
-atau variabel CSS darinya (blok Tailwind mematikan warna bawaan framework), dan
-`scripts/verify.py` memeriksa kode sumber terhadap file itu sebelum pekerjaan
-boleh disebut selesai: font, setiap literal warna, class warna framework, glow,
-teks gradien, backdrop blur, dan radius sudut. Langkah terakhir itu ada karena
-redesign sungguhan di mana agent mengumumkan arah hasil undian lalu tetap
-mengirim kebiasaan default-nya; terhadap spec-nya sendiri, kode itu lulus 0
-dari 8 cek. Dengan `--site`, pemeriksa juga membaca teks halaman hasil build:
-setiap persen, "3+", rentang tahun, atau hitungan harus tercatat di
-`design-claims.json` beserta sumbernya, setiap link harus jalan (URL absolut
-juga, dengan `--links`), dan seed milik spec tidak boleh muncul di copy. Run
-kedua dari redesign yang sama lulus semua cek visual dan gagal di sini: lima
-angka tanpa sumber, perintah `curl` yang bisa disalin tapi URL-nya 404, dan
-seed yang tercetak di footer. Hitungan, keterulangan, jarak, setiap rasio yang dicetak, dan kedua
-skrip baru diperiksa oleh test suite, rasionya terhadap salinan kedua rumus
-WCAG.
-
 ### Menentukan apa yang sampai ke pembaca
 
 Dua ini berlaku untuk setiap balasan, bukan menunggu pemicu, dan keduanya
@@ -242,7 +198,7 @@ Hook mencabut penilaian itu dari turn pertama. Sebelum model berjalan, ia
 menyuntikkan pengingat pendek: waktu lokal sudah ada di metadata pesan jadi
 jangan habiskan satu perintah untuk `date`, perlakukan ingatan sebagai lantai,
 cek versi yang terpasang sebelum menyebut API apa pun, muat skill grounding saat relevan, dan jaga setiap balasan tetap padat dan
-ditulis sederhana. Satu injeksi per turn, sekitar 1.671 karakter, setelah itu
+ditulis sederhana. Satu injeksi per turn, sekitar 1.557 karakter, setelah itu
 tidak ada lagi.
 
 ```
@@ -400,7 +356,7 @@ Di **Codex** ia membawa skill saja. `codex features list` melaporkan
 hook apa pun isi manifest-nya.
 
 Yang harus dihindari adalah menjalankan kedua jalur untuk satu agent. Dua
-salinan setiap skill, dan di Claude Code dua hook menyala, artinya 1.671
+salinan setiap skill, dan di Claude Code dua hook menyala, artinya 1.557
 karakter yang sama disuntik dua kali per turn. Pilih satu per agent.
 
 Manifest-nya adalah `.claude-plugin/plugin.json` beserta `marketplace.json`,
@@ -441,8 +397,8 @@ Ref-nya harus ada di repositori. `main` adalah target yang bergerak dan
 
 Setiap perubahan ditandai dan bisa dibatalkan.
 
-**Skill** berupa delapan folder di bawah direktori skill agent. Uninstall mencabut
-kedelapan folder itu dan tidak menyentuh yang lain.
+**Skill** berupa tujuh folder di bawah direktori skill agent. Uninstall mencabut
+keenam folder itu dan tidak menyentuh yang lain.
 
 **Rules** masuk ke file instruksi agent di antara dua marker:
 
@@ -493,10 +449,10 @@ proyeknya.
 
 | | |
 | --- | --- |
-| Dimuat saat startup, delapan nama dan deskripsi | 5.993 karakter |
-| Blok routing, di file instruksi | 2.315 karakter |
-| Injeksi hook, sekali per turn | 1.671 karakter |
-| Tetap per turn | 3.986 karakter |
+| Dimuat saat startup, tujuh nama dan deskripsi | 5.109 karakter |
+| Blok routing, di file instruksi | 2.060 karakter |
+| Injeksi hook, sekali per turn | 1.557 karakter |
+| Tetap per turn | 3.617 karakter |
 | Satu kali hook berjalan | 25 ms, dari sepuluh run dalam 247 ms |
 | Kegagalan hook | 0 dari 205 panggilan tercatat, 67 di antaranya injeksi |
 
@@ -568,49 +524,41 @@ sh test/run.sh
 ```
 
 Suite-nya memasang ke `HOME` sementara, jadi tidak pernah menyentuh konfigurasi
-asli Anda. Ia menjalankan 106 pemeriksaan: skill-nya valid terhadap spesifikasi
+asli Anda. Ia menjalankan 95 pemeriksaan: skill-nya valid terhadap spesifikasi
 dan semuanya disebut di blok routing serta pesan hook, skrip hook menjawab
 kedua kontrak host dan bertahan terhadap input rusak, blok rules idempoten dan
 membiarkan teks pengguna di tempat dan bentuk yang sama, pasangan marker yang
 rusak ditolak alih-alih dijalankan, nama `--agent` yang tidak dikenal gagal
-dengan keras, nomor versi terbaca sama di keenam belas tempat ia ditulis dan
+dengan keras, nomor versi terbaca sama di kelima belas tempat ia ditulis dan
 changelog-nya menyebut versi yang benar-benar dibawa paket, setiap hitungan
-yang ditulis dengan huruf cocok dengan isi direktori, hitungan arah, seed, dan
-rasio palet milik skill desainer dihitung ulang alih-alih dipercaya dan
-pemeriksanya meloloskan kode dan copy yang patuh serta menggagalkan setiap
-ciri slop yang ditanam, termasuk link mati, dan install yang diikuti uninstall mengembalikan file-nya byte
-for byte.
+yang ditulis dengan huruf cocok dengan isi direktori, dan install yang diikuti
+uninstall mengembalikan file-nya byte for byte.
 
-## Kenapa delapan, dan tidak lebih
+## Kenapa tujuh, dan tidak lebih
 
 Setiap skill di daftar itu dibayar setiap turn: agent memuat nama dan deskripsi
 tiap skill saat startup untuk memutuskan mana yang relevan. Pustaka besar
 berisi skill yang saling tumpang tindih membuat keputusan itu lebih buruk,
-bukan lebih baik. Kedelapannya terbagi rapi, satu pertanyaan masing-masing:
+bukan lebih baik. Ketujuhnya terbagi rapi, satu pertanyaan masing-masing:
 
 - **grounded-research**: apakah ini benar?
 - **stay-current**: apakah masih benar?
 - **modular-code-guard**: apakah kodenya akan tetap bisa dikerjakan?
 - **security-assessment**: bisakah input tak tepercaya menjangkau yang penting?
 - **senior-engineer**: apakah ini hal yang tepat untuk dibangun?
-- **senior-designer**: apakah ini terlihat didesain, atau seperti rata-rata
-  dari semuanya?
 - **concise-answers**: apakah jawabannya selamat saat dituliskan?
 - **plain-technical**: bisakah orang yang membacanya bertindak?
 
-Skill kesembilan harus menjawab pertanyaan yang tidak dijawab kedelapannya. Dua
-yang terakhir mendapat tempatnya dengan cara itu. `security-assessment`: tidak
-satu pun yang lain menanyakan ke mana input tak tepercaya pergi, dan dua
-kegagalan yang disasarnya berlawanan arah, menulis payload serangan dan menolak
-melihat kode mencurigakan sama sekali. `senior-designer`: tidak satu pun yang
-lain melihat layar, dan kegagalan yang disasarnya sama dengan yang dilawan
-skill grounding dalam tulisan, hasil yang diambil dari rata-rata data latih
-alih-alih dari kasus yang sedang dihadapi.
+Skill kedelapan harus menjawab pertanyaan yang tidak dijawab ketujuhnya. Yang
+ketujuh mendapat tempatnya dengan cara yang sama: tidak satu pun dari enam
+yang lain menanyakan ke mana input tak tepercaya pergi, dan dua kegagalan
+yang disasarnya berlawanan arah, menulis payload serangan dan menolak melihat
+kode mencurigakan sama sekali.
 
 Itulah seluruh bedanya dari koleksi besar. Yang besar memang besar dengan
 sengaja: katalog berisi 380, 1.000, bahkan 2.115 skill, tersusun per domain.
-Itu berguna kalau Anda sudah tahu nama hal yang Anda cari. Ini bukan itu. Delapan
-skill memakan 5.993 karakter konteks saat startup, terukur; seribu deskripsi
+Itu berguna kalau Anda sudah tahu nama hal yang Anda cari. Ini bukan itu. Tujuh
+skill memakan 5.109 karakter konteks saat startup, terukur; seribu deskripsi
 memakan sekian kali lipat di setiap sesi, dan menyesaki satu keputusan yang
 harus diambil agent tiap turn, yaitu apakah ada di antaranya yang relevan saat
 ini.
